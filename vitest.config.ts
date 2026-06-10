@@ -1,2 +1,10 @@
 import { defineConfig } from 'vitest/config';
-export default defineConfig({ test: { environment: 'node', include: ['src/**/*.test.ts'] } });
+import { resolve } from 'path';
+export default defineConfig({
+  resolve: {
+    alias: {
+      electron: resolve(__dirname, 'src/test/electron-stub.ts'),
+    },
+  },
+  test: { environment: 'node', include: ['src/**/*.test.ts'] },
+});
