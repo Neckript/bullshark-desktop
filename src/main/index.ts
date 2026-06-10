@@ -1,17 +1,30 @@
 import { app, BrowserWindow } from 'electron';
+import { registerIpc } from './ipc';
+import { createServerStore, electronStoreBackend } from './servers/store';
+import { openServerWindow } from './windows/main-window';
+import { openOnboarding } from './windows/servers-window';
 
-const createWindow = () => {
-  const win = new BrowserWindow({
-    width: 1100,
-    height: 750,
-    webPreferences: { contextIsolation: true, sandbox: true, nodeIntegration: false }
-  });
-  if (process.env.ELECTRON_RENDERER_URL) {
-    win.loadURL(process.env.ELECTRON_RENDERER_URL);
-  } else {
-    win.loadFile('out/renderer/index.html');
-  }
+const store = createServerStore(electronStoreBackend());
+
+const start = () => {
+  const active = store.getActive();
+  if (active) openServerWindow(active);
+  else openOnboarding();
 };
 
-app.whenReady().then(createWindow);
-app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });
+const gotLock = app.requestSingleInstanceLock();
+if (!gotLock) {
+  app.quit();
+} else {
+  app.on('second-instance', () => {
+    const win = BrowserWindow.getAllWindows()[0];
+    if (win) { win.show(); win.focus(); }
+  });
+  app.whenReady().then(() => {
+    registerIpc(store);
+    start();
+  });
+  app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });
+}
+
+export { store };
