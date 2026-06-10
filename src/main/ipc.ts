@@ -1,10 +1,11 @@
 import { BrowserWindow, ipcMain } from 'electron';
-import { IPC } from '../shared/ipc';
+import { BRIDGE, IPC } from '../shared/ipc';
 import { normalizeServerUrl } from './servers/url';
 import { probeServer } from './servers/validate';
 import type { createServerStore } from './servers/store';
-import { openServerWindow } from './windows/main-window';
-import type { Prefs } from '../shared/types';
+import { openServerWindow, showMainWindow } from './windows/main-window';
+import type { Prefs, VoiceState } from '../shared/types';
+import { setVoiceState } from './voice-bridge';
 
 type Store = ReturnType<typeof createServerStore>;
 
@@ -12,7 +13,7 @@ const broadcastServersChanged = () => {
   BrowserWindow.getAllWindows().forEach((w) => w.webContents.send(IPC.serversChanged));
 };
 
-export const registerIpc = (store: Store) => {
+export const registerIpc = (store: Store, onVoiceState?: () => void) => {
   ipcMain.handle(IPC.serversList, () => store.list());
   ipcMain.handle(IPC.prefsGet, () => store.getPrefs());
   ipcMain.handle(IPC.prefsSet, (_e, patch: unknown) => {
@@ -60,4 +61,11 @@ export const registerIpc = (store: Store) => {
     openServerWindow(server);
     return { ok: true };
   });
+
+  ipcMain.on(BRIDGE.voiceState, (_e, next: VoiceState) => {
+    setVoiceState(next);
+    onVoiceState?.();
+  });
+
+  ipcMain.on(BRIDGE.focusWindow, () => showMainWindow());
 };

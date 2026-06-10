@@ -1,7 +1,7 @@
 import { app, BrowserWindow } from 'electron';
 import { registerIpc } from './ipc';
 import { createServerStore, electronStoreBackend } from './servers/store';
-import { initTray } from './tray';
+import { initTray, refreshTray } from './tray';
 import { openServerWindow } from './windows/main-window';
 import { openOnboarding } from './windows/servers-window';
 
@@ -22,7 +22,7 @@ if (!gotLock) {
     if (win) { win.show(); win.focus(); }
   });
   app.whenReady().then(() => {
-    registerIpc(store);
+    registerIpc(store, () => refreshTray(store));
     start();
     initTray(store);
   });
