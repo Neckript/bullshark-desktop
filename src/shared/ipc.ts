@@ -9,3 +9,10 @@ export const IPC = {
   prefsSet: 'prefs:set',
   serversChanged: 'servers:changed'
 } as const;
+
+export const BRIDGE = {
+  setMuted: 'bridge:set-muted',              // main → remote (DND state)
+  voiceToggleRequest: 'bridge:voice-toggle', // main → remote (toggle mic)
+  voiceState: 'bridge:voice-state',          // remote → main ({ inVoice, muted })
+  focusWindow: 'bridge:focus-window'         // remote → main (show/focus the window)
+} as const;

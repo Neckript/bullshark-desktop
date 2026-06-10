@@ -13,3 +13,5 @@ export const DEFAULT_PREFS: Prefs = {
   launchOnStartup: false,
   lastWindowBounds: null
 };
+
+export type VoiceState = { inVoice: boolean; muted: boolean };
