@@ -1,6 +1,7 @@
 import { app, BrowserWindow } from 'electron';
 import { registerIpc } from './ipc';
 import { createServerStore, electronStoreBackend } from './servers/store';
+import { initTray } from './tray';
 import { openServerWindow } from './windows/main-window';
 import { openOnboarding } from './windows/servers-window';
 
@@ -23,6 +24,7 @@ if (!gotLock) {
   app.whenReady().then(() => {
     registerIpc(store);
     start();
+    initTray(store);
   });
   app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });
 }
