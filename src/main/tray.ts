@@ -9,8 +9,12 @@ import type { createServerStore } from './servers/store';
 type Store = ReturnType<typeof createServerStore>;
 let tray: Tray | null = null;
 
+const trayDir = app.isPackaged
+  ? join(process.resourcesPath, 'tray')
+  : join(import.meta.dirname, '../../build/tray');
+
 const iconFor = (state: 'normal' | 'notif-muted' | 'mic-muted') =>
-  nativeImage.createFromPath(join(import.meta.dirname, `../../build/tray/${state}.png`));
+  nativeImage.createFromPath(join(trayDir, `${state}.png`));
 
 export const refreshTray = (store: Store) => {
   if (!tray) return;

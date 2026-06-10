@@ -1,0 +1,32 @@
+appId: fr.bullshark.desktop
+productName: Bullshark
+directories:
+  output: dist
+  buildResources: build
+files:
+  - out/**
+extraResources:
+  - from: build/tray
+    to: tray
+publish:
+  provider: github
+  owner: Neckript
+  repo: bullshark-desktop
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+mac:
+  target:
+    - target: dmg
+      arch: [universal]
+    - target: zip
+      arch: [universal]
+  category: public.app-category.social-networking
+linux:
+  target:
+    - target: AppImage
+      arch: [x64]
+    - target: deb
+      arch: [x64]
+  category: Network
