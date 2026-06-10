@@ -2,6 +2,7 @@ import { app, BrowserWindow } from 'electron';
 import { registerIpc } from './ipc';
 import { createServerStore, electronStoreBackend } from './servers/store';
 import { initTray, refreshTray } from './tray';
+import { initUpdater } from './updater';
 import { openServerWindow } from './windows/main-window';
 import { openOnboarding } from './windows/servers-window';
 
@@ -25,6 +26,7 @@ if (!gotLock) {
     registerIpc(store, () => refreshTray(store));
     start();
     initTray(store);
+    void initUpdater({ repo: 'Neckript/bullshark-desktop' });
   });
   app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });
 }
