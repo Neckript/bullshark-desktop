@@ -977,7 +977,15 @@ git add src/shared/ipc.ts src/preload/shell.ts src/main/ipc.ts src/main/windows 
 git commit -m "feat: shell preload, IPC, onboarding + servers windows"
 ```
 
-### Task 8: Remote bridge preload (DND notification suppression + voice hook)
+### Task 8: Remote bridge preload (mute state + voice hook + focus)
+
+> Design correction (decided during execution): the original plan suppressed notifications by
+> overriding `window.Notification` in the preload. That does NOT work under `contextIsolation:
+> true` — the preload's globals are isolated from the page's, so the override has no effect on the
+> Bullshark page. DND suppression is therefore enforced by the **web app companion change**
+> (checks `window.bullshark.notifications.isMuted()` before emitting). The bridge only holds and
+> exposes the mute state + the voice hooks + a `focusWindow()` method. No `window.Notification`
+> override; consequently the preload uses no DOM globals and needs no tsconfig change.
 
 **Files:**
 - Create: `src/preload/bridge.ts`
@@ -988,9 +996,10 @@ git commit -m "feat: shell preload, IPC, onboarding + servers windows"
 In `src/shared/ipc.ts` add:
 ```ts
 export const BRIDGE = {
-  setMuted: 'bridge:set-muted',          // main → remote (DND state)
+  setMuted: 'bridge:set-muted',              // main → remote (DND state)
   voiceToggleRequest: 'bridge:voice-toggle', // main → remote (toggle mic)
-  voiceState: 'bridge:voice-state'       // remote → main ({ inVoice, muted })
+  voiceState: 'bridge:voice-state',          // remote → main ({ inVoice, muted })
+  focusWindow: 'bridge:focus-window'         // remote → main (show/focus the window)
 } as const;
 ```
 In `src/shared/types.ts` add:
@@ -1008,23 +1017,10 @@ import type { VoiceState } from '../shared/types';
 let muted = false;
 ipcRenderer.on(BRIDGE.setMuted, (_e, value: boolean) => { muted = value; });
 
-// Suppress native notifications while DND is active. The Bullshark web app calls
-// `new Notification(...)`; we gate it here without any web-app change.
-const NativeNotification = window.Notification;
-class GatedNotification extends NativeNotification {
-  constructor(title: string, options?: NotificationOptions) {
-    if (muted) {
-      // Construct a detached, never-shown instance.
-      super('', { ...options, silent: true });
-      this.close();
-      return;
-    }
-    super(title, options);
-  }
-}
-// @ts-expect-error override the global constructor seen by the page
-window.Notification = GatedNotification;
-
+// NOTE: we deliberately do NOT override window.Notification here. Under
+// contextIsolation the preload's globals are isolated from the page, so an
+// override would have no effect. DND is enforced by the web app companion
+// change consulting notifications.isMuted() before calling new Notification().
 contextBridge.exposeInMainWorld('bullshark', {
   isDesktop: true,
   notifications: { isMuted: () => muted },
@@ -1036,6 +1032,7 @@ contextBridge.exposeInMainWorld('bullshark', {
       return () => ipcRenderer.removeListener(BRIDGE.voiceToggleRequest, h);
     }
   },
+  focusWindow: () => ipcRenderer.send(BRIDGE.focusWindow),
   onMuteChanged: (cb: (muted: boolean) => void) => {
     const h = (_e: unknown, v: boolean) => cb(v);
     ipcRenderer.on(BRIDGE.setMuted, h);
@@ -1044,7 +1041,10 @@ contextBridge.exposeInMainWorld('bullshark', {
 });
 ```
 
-> The `window.bullshark.voice` calls are inert until the companion change lands in the `bullshark` web repo (separate small plan). DND notification suppression works immediately.
+> The entire `window.bullshark` surface is inert until the companion change lands in the
+> `bullshark` web repo (separate small plan): the web app feature-detects `window.bullshark`,
+> checks `notifications.isMuted()` before notifying, drives `voice`, and calls `focusWindow()`
+> on notification click. The desktop side ships the surface now so it lights up when that lands.
 
 - [ ] **Step 3: Typecheck**
 
@@ -1211,22 +1211,22 @@ git add src/main/voice-bridge.ts src/main/ipc.ts src/main/index.ts
 git commit -m "feat: voice mute bridge — tray toggle + remote state sync"
 ```
 
-### Task 11: Notification click → focus window
+### Task 11: Notification click → focus window (main-side handler)
+
+The bridge already exposes `window.bullshark.focusWindow()` (added in Task 8) and the
+`BRIDGE.focusWindow` channel. This task wires the main-process side. (The web app calls
+`focusWindow()` in its notification `onclick` — that is part of the companion change.)
 
 **Files:**
-- Modify: `src/preload/bridge.ts`
+- Modify: `src/main/ipc.ts`
 
-- [ ] **Step 1: Focus the window when a notification is clicked**
+- [ ] **Step 1: Handle the focus request in main**
 
-Extend `GatedNotification` to forward clicks. Add inside the class (non-muted branch), after `super(title, options)`:
+In `src/main/ipc.ts`, import `showMainWindow` from `./windows/main-window` and `BRIDGE` from
+`../shared/ipc`, then inside `registerIpc` add:
 ```ts
-this.addEventListener('click', () => ipcRenderer.send('bridge:notification-click'));
+ipcMain.on(BRIDGE.focusWindow, () => showMainWindow());
 ```
-Add channel `notificationClick: 'bridge:notification-click'` to `BRIDGE` in `src/shared/ipc.ts`, and in `ipc.ts` `registerIpc`:
-```ts
-ipcMain.on(BRIDGE.notificationClick, () => showMainWindow());
-```
-(import `showMainWindow` from `./windows/main-window`).
 
 - [ ] **Step 2: Typecheck**
 
@@ -1236,8 +1236,8 @@ Expected: clean.
 - [ ] **Step 3: Commit**
 
 ```bash
-git add src/preload/bridge.ts src/shared/ipc.ts src/main/ipc.ts
-git commit -m "feat: clicking a native notification focuses the window"
+git add src/main/ipc.ts
+git commit -m "feat: focus the window on notification click (bridge focusWindow handler)"
 ```
 
 ---

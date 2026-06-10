@@ -131,12 +131,16 @@ bullshark.onMuteChanged(cb)
 ```
 
 **Primary flows:**
-- **Native notifications:** Bullshark already calls `new Notification()`. `bridge.ts` wraps
-  `window.Notification`: when DND is active it suppresses; otherwise Electron renders it
-  natively. *(No web-app change required for DND.)*
+- **Native notifications:** Bullshark already calls `new Notification()`, which Electron renders
+  natively for free. **DND suppression cannot be done by overriding `window.Notification` in the
+  preload** — under `contextIsolation: true` the preload's globals are isolated from the page's,
+  so the override has no effect. Instead the web app (companion change) checks
+  `window.bullshark.notifications.isMuted()` before calling `new Notification()`. The bridge keeps
+  the mute state (`setMuted` from main) and exposes `isMuted()` / `onMuteChanged`.
 - **Mic mute (tray → web):** tray click → IPC → `bridge` → `voice.onToggleRequest` → web app
   toggles its mediasoup mic → `voice.reportState({muted})` → main updates tray icon/label.
-  *(The only flow that needs a small `bullshark` web change.)*
+- **Notification click → focus:** the web app's notification `onclick` calls
+  `window.bullshark.focusWindow()` → IPC → main shows/focuses the window.
 - **Switch server:** Servers page → `shell.servers.switchTo(id)` → main reloads the window on
   that server's URL + partition.
 
@@ -196,17 +200,19 @@ Show Bullshark  |  Quit
 - **3 icon states** (dedicated assets): normal · notifications-muted · mic-muted (mic-muted
   takes visual priority during a call).
 
-**Notifications DND** (no web change): persistent `notificationsMuted`; `bridge.ts` wraps
-`window.Notification` and suppresses when muted. Optionally `window.bullshark.notifications.isMuted()`
-lets the web app also skip the sound (optional).
+**Notifications DND** (companion web change): persistent `notificationsMuted` lives in main and
+is pushed to the bridge (`setMuted`); the bridge exposes `notifications.isMuted()` /
+`onMuteChanged`. Because `contextIsolation` prevents the preload from overriding the page's
+`Notification`, the **web app consults `window.bullshark.notifications.isMuted()` before emitting
+a notification** (feature-detected; inert in a normal browser). The tray toggle flips the state.
 
-**Mic mute** (small `bullshark` web change): tray toggle → IPC → `bridge` →
+**Mic mute** (companion web change): tray toggle → IPC → `bridge` →
 `voice.onToggleRequest` → web app toggles mediasoup mic → `voice.reportState` → main updates
 icon/label. When not in voice, the mic entry is disabled (web app reports no voice session).
 
-**Native notifications:** rendered natively automatically. Added: notification click → focus
-window (and, if the web app supplies a target via the bridge, navigate to the channel;
-otherwise just focus). Correct app name/icon per platform (Windows AppUserModelID set).
+**Native notifications:** rendered natively automatically by Electron. Notification click →
+focus: the web app's notification `onclick` calls `window.bullshark.focusWindow()` → main shows/
+focuses the window. Correct app name/icon per platform (Windows AppUserModelID set).
 
 ## Section 6 — Auto-update
 
@@ -253,16 +259,20 @@ matrix handles all three OSes.
 
 ## Bullshark web app coordination (separate repo)
 
-The wrapper requires **one small, optional, feature-detected** addition in the `bullshark`
-web repo, only for **mic mute** (and optional notification-sound respect):
+The wrapper requires a **small, feature-detected** companion addition in the `bullshark` web
+repo, covering three things (all gated on `window.bullshark?.isDesktop`, inert in a normal
+browser where `window.bullshark` is `undefined`):
 
-- Feature-detect `window.bullshark?.isDesktop`.
-- When present and in a voice session: call `window.bullshark.voice.reportState({ muted })` on
+- **Mic mute:** in a voice session, call `window.bullshark.voice.reportState({ muted })` on
   mic-state changes, and register `window.bullshark.voice.onToggleRequest(() => toggleMic())`.
-- Optional: consult `window.bullshark.notifications.isMuted()` before playing notification sound.
+- **Notification DND:** check `window.bullshark.notifications.isMuted()` before calling
+  `new Notification()` (and skip the notification sound when muted).
+- **Notification click → focus:** call `window.bullshark.focusWindow()` in the notification's
+  `onclick` handler.
 
-This is additive and inert in a normal browser (where `window.bullshark` is undefined). It will
-be specced/planned as a small companion change to `bullshark` when we reach that feature.
+This is additive and inert in a normal browser. It will be specced/planned as a small companion
+change to `bullshark` (its own spec → plan cycle). The desktop side ships the `window.bullshark`
+surface (incl. `focusWindow`) regardless; the features light up once the companion change lands.
 
 ## Error handling & edge cases
 
