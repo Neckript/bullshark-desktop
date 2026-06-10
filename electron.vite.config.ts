@@ -10,6 +10,11 @@ export default defineConfig({
         input: {
           shell: resolve('src/preload/shell.ts'),
           bridge: resolve('src/preload/bridge.ts')
+        },
+        output: {
+          format: 'cjs',
+          entryFileNames: '[name].cjs',
+          chunkFileNames: '[name]-[hash].cjs'
         }
       }
     }

@@ -27,7 +27,12 @@ export const refreshTray = (store: Store) => {
     { label: active ? `Bullshark — ${active.label || active.url}` : 'Bullshark', enabled: false },
     { type: 'separator' },
     { label: 'Notifications', type: 'checkbox', checked: !isNotificationsMuted(),
-      click: () => { setNotificationsMuted(!isNotificationsMuted()); refreshTray(store); } },
+      click: () => {
+        const next = !isNotificationsMuted();
+        setNotificationsMuted(next);
+        store.setPrefs({ notificationsMuted: next });
+        refreshTray(store);
+      } },
     { label: 'Microphone', type: 'checkbox', checked: voice.inVoice && !voice.muted, enabled: voice.inVoice,
       click: () => requestVoiceToggle() },
     { type: 'separator' },

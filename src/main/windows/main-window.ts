@@ -24,7 +24,7 @@ export const openServerWindow = (server: ServerEntry) => {
         sandbox: true,
         nodeIntegration: false,
         partition: partitionForServer(server.id),
-        preload: join(import.meta.dirname, '../preload/bridge.js')
+        preload: join(import.meta.dirname, '../preload/bridge.cjs')
       }
     });
     mainWindow.once('ready-to-show', () => mainWindow?.show());

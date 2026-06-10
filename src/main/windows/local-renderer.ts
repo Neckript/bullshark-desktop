@@ -9,7 +9,7 @@ export const createLocalWindow = (route: string, opts?: { width?: number; height
       contextIsolation: true,
       sandbox: true,
       nodeIntegration: false,
-      preload: join(import.meta.dirname, '../preload/shell.js')
+      preload: join(import.meta.dirname, '../preload/shell.cjs')
     }
   });
   const base = process.env.ELECTRON_RENDERER_URL;

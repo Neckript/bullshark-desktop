@@ -1,5 +1,6 @@
 import { app, BrowserWindow } from 'electron';
 import { registerIpc } from './ipc';
+import { setNotificationsMuted } from './notifications';
 import { createServerStore, electronStoreBackend } from './servers/store';
 import { initTray, refreshTray } from './tray';
 import { initUpdater } from './updater';
@@ -18,11 +19,13 @@ const gotLock = app.requestSingleInstanceLock();
 if (!gotLock) {
   app.quit();
 } else {
+  app.setAppUserModelId('fr.bullshark.desktop');
   app.on('second-instance', () => {
     const win = BrowserWindow.getAllWindows()[0];
     if (win) { win.show(); win.focus(); }
   });
   app.whenReady().then(() => {
+    setNotificationsMuted(store.getPrefs().notificationsMuted);
     registerIpc(store, () => refreshTray(store));
     start();
     initTray(store);
