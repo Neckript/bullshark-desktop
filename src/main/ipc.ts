@@ -63,6 +63,7 @@ export const registerIpc = (store: Store, onVoiceState?: () => void) => {
   });
 
   ipcMain.on(BRIDGE.voiceState, (_e, next: VoiceState) => {
+    if (typeof next?.inVoice !== 'boolean' || typeof next?.muted !== 'boolean') return;
     setVoiceState(next);
     onVoiceState?.();
   });
