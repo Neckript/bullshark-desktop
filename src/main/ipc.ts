@@ -4,6 +4,7 @@ import { normalizeServerUrl } from './servers/url';
 import { probeServer } from './servers/validate';
 import type { createServerStore } from './servers/store';
 import { openServerWindow } from './windows/main-window';
+import type { Prefs } from '../shared/types';
 
 type Store = ReturnType<typeof createServerStore>;
 
@@ -14,7 +15,15 @@ const broadcastServersChanged = () => {
 export const registerIpc = (store: Store) => {
   ipcMain.handle(IPC.serversList, () => store.list());
   ipcMain.handle(IPC.prefsGet, () => store.getPrefs());
-  ipcMain.handle(IPC.prefsSet, (_e, patch) => store.setPrefs(patch));
+  ipcMain.handle(IPC.prefsSet, (_e, patch: unknown) => {
+    if (typeof patch !== 'object' || patch === null) return store.getPrefs();
+    const p = patch as Record<string, unknown>;
+    const allowed: (keyof Prefs)[] = ['activeServerId', 'notificationsMuted', 'launchOnStartup', 'lastWindowBounds'];
+    const sanitized: Partial<Prefs> = {};
+    for (const key of allowed) if (key in p) (sanitized as Record<string, unknown>)[key] = p[key];
+    store.setPrefs(sanitized);
+    return store.getPrefs();
+  });
 
   ipcMain.handle(IPC.serversValidate, async (_e, { url }: { url: string }) => {
     const norm = normalizeServerUrl(url);

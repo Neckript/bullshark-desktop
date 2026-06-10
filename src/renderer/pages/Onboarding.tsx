@@ -1,25 +1,5 @@
 import { useState } from 'react';
 
-declare global {
-  interface Window {
-    shell: {
-      servers: {
-        list: () => Promise<import('../../shared/types').ServerEntry[]>;
-        add: (url: string, label: string) => Promise<{ ok: boolean; reason?: string; id?: string }>;
-        update: (id: string, patch: Partial<import('../../shared/types').ServerEntry>) => Promise<{ ok: boolean; reason?: string }>;
-        remove: (id: string) => Promise<{ ok: boolean }>;
-        switchTo: (id: string) => Promise<{ ok: boolean }>;
-        validateUrl: (url: string) => Promise<{ ok: boolean; reason?: string; url?: string }>;
-      };
-      prefs: {
-        get: () => Promise<import('../../shared/types').Prefs>;
-        set: (patch: Partial<import('../../shared/types').Prefs>) => Promise<void>;
-      };
-      onServersChanged: (cb: () => void) => () => void;
-    };
-  }
-}
-
 export const Onboarding = () => {
   const [url, setUrl] = useState('');
   const [status, setStatus] = useState<string | null>(null);
