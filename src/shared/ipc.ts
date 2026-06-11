@@ -10,11 +10,3 @@ export const IPC = {
   serversChanged: 'servers:changed',
   appLocale: 'app:locale'
 } as const;
-
-export const BRIDGE = {
-  setMuted: 'bridge:set-muted',              // main → remote (DND state)
-  voiceToggleRequest: 'bridge:voice-toggle', // main → remote (toggle mic)
-  voiceState: 'bridge:voice-state',          // remote → main ({ inVoice, muted })
-  focusWindow: 'bridge:focus-window',        // remote → main (show/focus the window)
-  compat: 'bridge:compat'                    // main → remote ({ verdict, message })
-} as const;

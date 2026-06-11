@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron';
-import { BRIDGE } from '../shared/ipc';
+import { BRIDGE } from '../shared/bridge';
 import type { VoiceState, CompatBannerPayload } from '../shared/types';
 
 let muted = false;
