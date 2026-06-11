@@ -20,3 +20,10 @@ export type CompatBannerPayload = {
   verdict: 'too-old' | 'native-unavailable';
   message: string;
 };
+
+export type SourceDto = {
+  id: string;
+  name: string;
+  thumbnailDataUrl: string;
+  appIconDataUrl?: string;
+};

@@ -1,4 +1,4 @@
-import type { ServerEntry, Prefs } from '../shared/types';
+import type { ServerEntry, Prefs, SourceDto } from '../shared/types';
 import type { Locale } from '../shared/i18n/locales';
 
 declare global {
@@ -15,6 +15,11 @@ declare global {
       prefs: {
         get: () => Promise<Prefs>;
         set: (patch: Partial<Prefs>) => Promise<void>;
+      };
+      screen: {
+        getSources: () => Promise<SourceDto[]>;
+        choose: (id: string) => Promise<void>;
+        cancel: () => Promise<void>;
       };
       locale: () => Promise<Locale>;
       onServersChanged: (cb: () => void) => () => void;
