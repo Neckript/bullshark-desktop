@@ -37,6 +37,8 @@ export const openSharePicker = (parent: BrowserWindow, onClosed: () => void): Br
 };
 
 export const closeSharePicker = () => {
+  // Don't null `picker` here: the 'closed' event owns that. Nulling synchronously
+  // before 'closed' fires would let a new request open a second window while this
+  // one is still mid-close, breaking the single-window invariant.
   if (picker && !picker.isDestroyed()) picker.close();
-  picker = null;
 };
