@@ -27,11 +27,13 @@ let pending: { callback: DisplayMediaCallback; sources: DesktopCapturerSource[] 
 // resolves via chooseSource()/cancelShare(). One request at a time.
 export const installScreenShareHandler = (session: Session, getParent: () => BrowserWindow | null) => {
   session.setDisplayMediaRequestHandler(async (_request, callback) => {
-    const parent = getParent();
-    if (pending || !parent) {
+    if (pending || !getParent()) {
       callback({});
       return;
     }
+    // Claim the slot before the async getSources so a second concurrent request
+    // is denied instead of overwriting this one (which would orphan its callback).
+    pending = { callback, sources: [] };
     let sources: DesktopCapturerSource[];
     try {
       sources = await desktopCapturer.getSources({
@@ -40,10 +42,19 @@ export const installScreenShareHandler = (session: Session, getParent: () => Bro
         fetchWindowIcons: true
       });
     } catch {
+      pending = null;
       callback({});
       return;
     }
-    pending = { callback, sources };
+    // cancelShare/chooseSource cannot run during the await (no picker, no IPC
+    // yet), so `pending` is still our claim here. Only the parent may have gone.
+    const parent = getParent();
+    if (!parent) {
+      pending = null;
+      callback({});
+      return;
+    }
+    pending.sources = sources;
     openSharePicker(parent, cancelShare);
   });
 };
