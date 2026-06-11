@@ -9,11 +9,10 @@ describe('normalizeServerUrl', () => {
     expect(normalizeServerUrl('http://chat.example.com')).toEqual({ ok: false, reason: 'http-not-allowed' });
   });
   test('rejects http on localhost (no exception)', () => {
-    expect(normalizeServerUrl('http://localhost:4991').ok).toBe(false);
-    expect(normalizeServerUrl('http://localhost:4991').reason).toBe('http-not-allowed');
+    expect(normalizeServerUrl('http://localhost:4991')).toEqual({ ok: false, reason: 'http-not-allowed' });
   });
   test('rejects http on a bare IP', () => {
-    expect(normalizeServerUrl('http://192.168.1.42:4991').reason).toBe('http-not-allowed');
+    expect(normalizeServerUrl('http://192.168.1.42:4991')).toEqual({ ok: false, reason: 'http-not-allowed' });
   });
   test('defaults a bare host to https', () => {
     expect(normalizeServerUrl('192.168.1.42:4991')).toEqual({ ok: true, url: 'https://192.168.1.42:4991' });
