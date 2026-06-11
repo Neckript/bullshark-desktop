@@ -7,7 +7,7 @@ import { fetchServerInfo } from '../servers/server-info';
 import { evaluateCompat } from '../servers/compat';
 import { resolveLocale } from '../../shared/i18n/locales';
 import { t } from '../../shared/i18n/messages';
-import { BRIDGE } from '../../shared/ipc';
+import { BRIDGE } from '../../shared/bridge';
 
 let mainWindow: BrowserWindow | null = null;
 

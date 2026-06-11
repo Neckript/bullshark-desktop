@@ -1,5 +1,5 @@
 import { BrowserWindow } from 'electron';
-import { BRIDGE } from '../shared/ipc';
+import { BRIDGE } from '../shared/bridge';
 import type { VoiceState } from '../shared/types';
 
 let state: VoiceState = { inVoice: false, muted: false };

@@ -8,6 +8,8 @@ jobs:
     permissions:
       contents: write
     strategy:
+      # One OS failing must not cancel the others' builds/publishes.
+      fail-fast: false
       matrix:
         os: [windows-latest, macos-latest, ubuntu-latest]
     runs-on: ${{ matrix.os }}
