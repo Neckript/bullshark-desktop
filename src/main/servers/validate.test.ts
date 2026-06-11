@@ -27,6 +27,7 @@ describe('classifyProbeError', () => {
   });
   test('refused → connection-refused', () => {
     expect(classifyProbeError({ cause: { code: 'ECONNREFUSED' } })).toBe('connection-refused');
+    expect(classifyProbeError({ code: 'ECONNREFUSED' })).toBe('connection-refused');
   });
   test('abort/timeout → timeout', () => {
     expect(classifyProbeError(Object.assign(new Error('aborted'), { name: 'AbortError' }))).toBe('timeout');
