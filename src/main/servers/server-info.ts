@@ -1,5 +1,10 @@
 type FetchLike = (url: string, init?: RequestInit) => Promise<Response>;
 
+// Runs in the main process on the default session (CORS does not apply here).
+// A server with an untrusted/self-signed certificate will reject and yield null
+// -> verdict 'unknown' -> no banner. That is intentional: self-signed servers are
+// an unsupported path (the app assumes a valid public cert), so the compat check
+// degrades silently rather than firing a false warning.
 export const fetchServerInfo = async (
   baseUrl: string,
   fetchImpl: FetchLike = fetch,
