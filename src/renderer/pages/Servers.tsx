@@ -8,6 +8,7 @@ export const Servers = () => {
   const [url, setUrl] = useState('');
   const [locale, setLocale] = useState<Locale>('en');
   const [error, setError] = useState<string | null>(null);
+  const [checking, setChecking] = useState(false);
 
   const refresh = async () => setServers(await window.shell.servers.list());
   useEffect(() => { void refresh(); return window.shell.onServersChanged(refresh); }, []);
@@ -15,10 +16,15 @@ export const Servers = () => {
 
   const add = async () => {
     setError(null);
-    const v = await window.shell.servers.validateUrl(url);
-    if (!v.ok) { setError(t(v.reason ?? 'unreachable', locale)); return; }
-    const r = await window.shell.servers.add(url, '');
-    if (r.ok) { setUrl(''); } else { setError(t(r.reason ?? 'unreachable', locale)); }
+    setChecking(true);
+    try {
+      const v = await window.shell.servers.validateUrl(url);
+      if (!v.ok) { setError(t(v.reason ?? 'unreachable', locale)); return; }
+      const r = await window.shell.servers.add(url, '');
+      if (r.ok) { setUrl(''); } else { setError(t(r.reason ?? 'unreachable', locale)); }
+    } finally {
+      setChecking(false);
+    }
   };
 
   return (
@@ -34,7 +40,7 @@ export const Servers = () => {
         ))}
       </ul>
       <input value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://chat.example.com" />
-      <button onClick={add}>Add</button>
+      <button onClick={add} disabled={checking}>{checking ? 'Checking…' : 'Add'}</button>
       {error && <p style={{ color: 'crimson' }}>{error}</p>}
     </div>
   );
