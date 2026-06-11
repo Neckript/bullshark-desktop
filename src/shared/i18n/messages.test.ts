@@ -17,4 +17,10 @@ describe('messages catalogue', () => {
   test('t falls back to the unreachable message for an unknown code', () => {
     expect(t('totally-unknown', 'en')).toBe(MESSAGES.unreachable.en);
   });
+  test('compat banner codes exist and are localized', () => {
+    expect(ERROR_CODES).toContain('server-too-old');
+    expect(ERROR_CODES).toContain('server-native-unavailable');
+    expect(t('server-too-old', 'fr')).toBe(MESSAGES['server-too-old'].fr);
+    expect(t('server-native-unavailable', 'cs')).toBe(MESSAGES['server-native-unavailable'].cs);
+  });
 });

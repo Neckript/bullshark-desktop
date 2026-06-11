@@ -11,6 +11,8 @@ export const ERROR_CODES = [
   'timeout',
   'server-error',
   'unreachable',
+  'server-too-old',
+  'server-native-unavailable',
 ] as const;
 export type ErrorCode = (typeof ERROR_CODES)[number];
 
@@ -106,6 +108,24 @@ export const MESSAGES: Catalogue = {
     ru: 'Не удалось подключиться к серверу. Проверьте адрес и сеть.',
     zh: '无法连接到服务器。请检查地址和网络。',
     cs: 'Server není dostupný. Zkontrolujte adresu a síť.',
+  },
+  'server-too-old': {
+    en: 'This server is older than this app supports — some features may not work. Update your Bullshark server.',
+    fr: "Ce serveur est plus ancien que ce que cette application prend en charge — certaines fonctions peuvent ne pas marcher. Mets à jour ton serveur Bullshark.",
+    es: 'Este servidor es más antiguo de lo que admite esta aplicación: algunas funciones pueden no funcionar. Actualiza tu servidor Bullshark.',
+    it: 'Questo server è più vecchio di quanto supporti questa app: alcune funzioni potrebbero non funzionare. Aggiorna il tuo server Bullshark.',
+    ru: 'Этот сервер старее, чем поддерживает приложение — некоторые функции могут не работать. Обновите сервер Bullshark.',
+    zh: '此服务器版本低于本应用支持的版本——部分功能可能无法使用。请更新你的 Bullshark 服务器。',
+    cs: 'Tento server je starší, než tato aplikace podporuje – některé funkce nemusí fungovat. Aktualizujte svůj server Bullshark.',
+  },
+  'server-native-unavailable': {
+    en: "This server doesn't support the desktop's native features yet (notification DND, mic mute). Update your Bullshark server.",
+    fr: "Ce serveur ne prend pas encore en charge les fonctions natives du bureau (mode silencieux des notifications, coupure du micro). Mets à jour ton serveur Bullshark.",
+    es: 'Este servidor aún no admite las funciones nativas del escritorio (no molestar en notificaciones, silenciar micrófono). Actualiza tu servidor Bullshark.',
+    it: 'Questo server non supporta ancora le funzioni native del desktop (Non disturbare per le notifiche, disattivazione del microfono). Aggiorna il tuo server Bullshark.',
+    ru: 'Этот сервер пока не поддерживает нативные функции приложения (режим «не беспокоить» для уведомлений, отключение микрофона). Обновите сервер Bullshark.',
+    zh: '此服务器尚不支持桌面端的原生功能（通知免打扰、麦克风静音）。请更新你的 Bullshark 服务器。',
+    cs: 'Tento server zatím nepodporuje nativní funkce aplikace (Nerušit pro oznámení, ztlumení mikrofonu). Aktualizujte svůj server Bullshark.',
   },
 };
 
