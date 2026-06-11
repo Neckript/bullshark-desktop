@@ -12,6 +12,10 @@ publish:
   provider: github
   owner: Neckript
   repo: bullshark-desktop
+  # Publish the GitHub Release immediately (not as a draft) so the auto-updater
+  # sees it. electron-builder defaults to 'draft', which would require a manual
+  # "Publish" click and keep the update invisible to installed clients.
+  releaseType: release
 win:
   target:
     - target: nsis
