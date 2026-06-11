@@ -1,5 +1,5 @@
 import { BrowserWindow } from 'electron';
-import { BRIDGE } from '../shared/ipc';
+import { BRIDGE } from '../shared/bridge';
 
 let muted = false;
 export const isNotificationsMuted = () => muted;

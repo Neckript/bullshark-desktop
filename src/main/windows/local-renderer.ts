@@ -14,6 +14,6 @@ export const createLocalWindow = (route: string, opts?: { width?: number; height
   });
   const base = process.env.ELECTRON_RENDERER_URL;
   if (base) void win.loadURL(`${base}#${route}`);
-  else void win.loadFile('out/renderer/index.html', { hash: route });
+  else void win.loadFile(join(import.meta.dirname, '../renderer/index.html'), { hash: route });
   return win;
 };

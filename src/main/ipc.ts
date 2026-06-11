@@ -1,5 +1,6 @@
 import { app, BrowserWindow, ipcMain } from 'electron';
-import { BRIDGE, IPC } from '../shared/ipc';
+import { IPC } from '../shared/ipc';
+import { BRIDGE } from '../shared/bridge';
 import { normalizeServerUrl } from './servers/url';
 import { probeServer } from './servers/validate';
 import type { createServerStore } from './servers/store';
