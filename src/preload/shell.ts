@@ -1,6 +1,7 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import { IPC } from '../shared/ipc';
 import type { Prefs, ServerEntry } from '../shared/types';
+import type { Locale } from '../shared/i18n/locales';
 
 contextBridge.exposeInMainWorld('shell', {
   servers: {
@@ -16,6 +17,7 @@ contextBridge.exposeInMainWorld('shell', {
     get: (): Promise<Prefs> => ipcRenderer.invoke(IPC.prefsGet),
     set: (patch: Partial<Prefs>) => ipcRenderer.invoke(IPC.prefsSet, patch)
   },
+  locale: (): Promise<Locale> => ipcRenderer.invoke(IPC.appLocale),
   onServersChanged: (cb: () => void) => {
     const handler = () => cb();
     ipcRenderer.on(IPC.serversChanged, handler);
