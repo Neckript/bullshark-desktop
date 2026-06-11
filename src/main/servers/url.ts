@@ -1,4 +1,5 @@
-export type NormalizeResult = { ok: true; url: string } | { ok: false; reason: string };
+export type NormalizeReason = 'empty' | 'invalid' | 'scheme' | 'http-not-allowed';
+export type NormalizeResult = { ok: true; url: string } | { ok: false; reason: NormalizeReason };
 
 export const normalizeServerUrl = (input: string): NormalizeResult => {
   const trimmed = input.trim();
@@ -13,7 +14,10 @@ export const normalizeServerUrl = (input: string): NormalizeResult => {
     return { ok: false, reason: 'invalid' };
   }
 
-  if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+  if (parsed.protocol === 'http:') {
+    return { ok: false, reason: 'http-not-allowed' };
+  }
+  if (parsed.protocol !== 'https:') {
     return { ok: false, reason: 'scheme' };
   }
 

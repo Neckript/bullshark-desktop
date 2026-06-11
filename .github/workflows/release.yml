@@ -4,6 +4,9 @@ on:
     tags: ['v*']
 jobs:
   release:
+    # Required so the default GITHUB_TOKEN can create/publish the Release.
+    permissions:
+      contents: write
     strategy:
       matrix:
         os: [windows-latest, macos-latest, ubuntu-latest]

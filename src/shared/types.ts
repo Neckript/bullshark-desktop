@@ -15,3 +15,8 @@ export const DEFAULT_PREFS: Prefs = {
 };
 
 export type VoiceState = { inVoice: boolean; muted: boolean };
+
+export type CompatBannerPayload = {
+  verdict: 'too-old' | 'native-unavailable';
+  message: string;
+};

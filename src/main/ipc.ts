@@ -1,4 +1,4 @@
-import { BrowserWindow, ipcMain } from 'electron';
+import { app, BrowserWindow, ipcMain } from 'electron';
 import { BRIDGE, IPC } from '../shared/ipc';
 import { normalizeServerUrl } from './servers/url';
 import { probeServer } from './servers/validate';
@@ -6,6 +6,7 @@ import type { createServerStore } from './servers/store';
 import { openServerWindow, showMainWindow } from './windows/main-window';
 import type { Prefs, VoiceState } from '../shared/types';
 import { setVoiceState } from './voice-bridge';
+import { resolveLocale } from '../shared/i18n/locales';
 
 type Store = ReturnType<typeof createServerStore>;
 
@@ -14,6 +15,7 @@ const broadcastServersChanged = () => {
 };
 
 export const registerIpc = (store: Store, onVoiceState?: () => void) => {
+  ipcMain.handle(IPC.appLocale, () => resolveLocale(app.getLocale()));
   ipcMain.handle(IPC.serversList, () => store.list());
   ipcMain.handle(IPC.prefsGet, () => store.getPrefs());
   ipcMain.handle(IPC.prefsSet, (_e, patch: unknown) => {
