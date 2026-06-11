@@ -28,9 +28,10 @@ mac:
       arch: [universal]
   category: public.app-category.social-networking
 linux:
+  # AppImage only: it is the universal Linux format and needs no maintainer
+  # email. The deb target requires an author 'email' (absent here) and was the
+  # sole cause of the Linux release failure.
   target:
     - target: AppImage
-      arch: [x64]
-    - target: deb
       arch: [x64]
   category: Network
