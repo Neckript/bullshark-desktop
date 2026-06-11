@@ -8,6 +8,7 @@ import { openServerWindow, showMainWindow } from './windows/main-window';
 import type { Prefs, VoiceState } from '../shared/types';
 import { setVoiceState } from './voice-bridge';
 import { resolveLocale } from '../shared/i18n/locales';
+import { getSourceDtos, chooseSource, cancelShare } from './screen-share';
 
 type Store = ReturnType<typeof createServerStore>;
 
@@ -64,6 +65,10 @@ export const registerIpc = (store: Store, onVoiceState?: () => void) => {
     openServerWindow(server);
     return { ok: true };
   });
+
+  ipcMain.handle(IPC.screenSources, () => getSourceDtos());
+  ipcMain.handle(IPC.screenPick, (_e, id: string) => chooseSource(id));
+  ipcMain.handle(IPC.screenCancel, () => cancelShare());
 
   ipcMain.on(BRIDGE.voiceState, (_e, next: VoiceState) => {
     if (typeof next?.inVoice !== 'boolean' || typeof next?.muted !== 'boolean') return;

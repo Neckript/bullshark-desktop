@@ -8,6 +8,7 @@ import { evaluateCompat } from '../servers/compat';
 import { resolveLocale } from '../../shared/i18n/locales';
 import { t } from '../../shared/i18n/messages';
 import { BRIDGE } from '../../shared/bridge';
+import { installScreenShareHandler } from '../screen-share';
 
 let mainWindow: BrowserWindow | null = null;
 
@@ -63,6 +64,7 @@ export const openServerWindow = (server: ServerEntry) => {
     return;
   }
   applyNavigationGuards(mainWindow.webContents, new URL(server.url).origin);
+  installScreenShareHandler(mainWindow.webContents.session, getMainWindow);
   mainWindow.webContents.once('did-finish-load', () => {
     void sendCompatBanner(mainWindow!, server.url);
   });
