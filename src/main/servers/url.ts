@@ -13,7 +13,10 @@ export const normalizeServerUrl = (input: string): NormalizeResult => {
     return { ok: false, reason: 'invalid' };
   }
 
-  if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+  if (parsed.protocol === 'http:') {
+    return { ok: false, reason: 'http-not-allowed' };
+  }
+  if (parsed.protocol !== 'https:') {
     return { ok: false, reason: 'scheme' };
   }
 
