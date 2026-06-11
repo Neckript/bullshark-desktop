@@ -7,7 +7,8 @@ export const IPC = {
   serversValidate: 'servers:validate',
   prefsGet: 'prefs:get',
   prefsSet: 'prefs:set',
-  serversChanged: 'servers:changed'
+  serversChanged: 'servers:changed',
+  appLocale: 'app:locale'
 } as const;
 
 export const BRIDGE = {

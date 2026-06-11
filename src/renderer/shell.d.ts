@@ -1,4 +1,5 @@
 import type { ServerEntry, Prefs } from '../shared/types';
+import type { Locale } from '../shared/i18n/locales';
 
 declare global {
   interface Window {
@@ -15,6 +16,7 @@ declare global {
         get: () => Promise<Prefs>;
         set: (patch: Partial<Prefs>) => Promise<void>;
       };
+      locale: () => Promise<Locale>;
       onServersChanged: (cb: () => void) => () => void;
     };
   }
