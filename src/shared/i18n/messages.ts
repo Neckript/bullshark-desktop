@@ -13,6 +13,8 @@ export const ERROR_CODES = [
   'unreachable',
   'server-too-old',
   'server-native-unavailable',
+  'update-available',
+  'reload',
 ] as const;
 export type ErrorCode = (typeof ERROR_CODES)[number];
 
@@ -126,6 +128,24 @@ export const MESSAGES: Catalogue = {
     ru: 'Этот сервер пока не поддерживает нативные функции приложения (режим «не беспокоить» для уведомлений, отключение микрофона). Обновите сервер Bullshark.',
     zh: '此服务器尚不支持桌面端的原生功能（通知免打扰、麦克风静音）。请更新你的 Bullshark 服务器。',
     cs: 'Tento server zatím nepodporuje nativní funkce aplikace (Nerušit pro oznámení, ztlumení mikrofonu). Aktualizujte svůj server Bullshark.',
+  },
+  'update-available': {
+    en: 'This server was updated. Reload to get the latest version.',
+    fr: 'Ce serveur a été mis à jour. Recharge pour obtenir la dernière version.',
+    es: 'Este servidor se ha actualizado. Recarga para obtener la última versión.',
+    it: "Questo server è stato aggiornato. Ricarica per ottenere l'ultima versione.",
+    ru: 'Этот сервер был обновлён. Перезагрузите, чтобы получить последнюю версию.',
+    zh: '此服务器已更新。重新加载以获取最新版本。',
+    cs: 'Tento server byl aktualizován. Načtěte znovu pro nejnovější verzi.',
+  },
+  reload: {
+    en: 'Reload',
+    fr: 'Recharger',
+    es: 'Recargar',
+    it: 'Ricarica',
+    ru: 'Перезагрузить',
+    zh: '重新加载',
+    cs: 'Načíst znovu',
   },
 };
 

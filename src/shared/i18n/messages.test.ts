@@ -23,4 +23,10 @@ describe('messages catalogue', () => {
     expect(t('server-too-old', 'fr')).toBe(MESSAGES['server-too-old'].fr);
     expect(t('server-native-unavailable', 'cs')).toBe(MESSAGES['server-native-unavailable'].cs);
   });
+  test('update-banner codes exist and are localized', () => {
+    expect(ERROR_CODES).toContain('update-available');
+    expect(ERROR_CODES).toContain('reload');
+    expect(t('update-available', 'fr')).toBe(MESSAGES['update-available'].fr);
+    expect(t('reload', 'cs')).toBe(MESSAGES['reload'].cs);
+  });
 });
