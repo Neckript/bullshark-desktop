@@ -7,5 +7,7 @@ export const BRIDGE = {
   voiceToggleRequest: 'bridge:voice-toggle', // main → remote (toggle mic)
   voiceState: 'bridge:voice-state',          // remote → main ({ inVoice, muted })
   focusWindow: 'bridge:focus-window',        // remote → main (show/focus the window)
-  compat: 'bridge:compat'                    // main → remote ({ verdict, message })
+  compat: 'bridge:compat',                   // main → remote ({ verdict, message })
+  updateAvailable: 'bridge:update-available',// main → remote ({ message, reloadLabel })
+  reloadRequest: 'bridge:reload-request'     // remote → main (reload the page)
 } as const;
