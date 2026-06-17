@@ -21,6 +21,11 @@ export type CompatBannerPayload = {
   message: string;
 };
 
+export type UpdateBannerPayload = {
+  message: string;
+  reloadLabel: string;
+};
+
 export type SourceDto = {
   id: string;
   name: string;
