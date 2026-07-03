@@ -15,6 +15,10 @@ export const ERROR_CODES = [
   'server-native-unavailable',
   'update-available',
   'reload',
+  'mute-hotkey-label',
+  'mute-hotkey-hint',
+  'mute-hotkey-reset',
+  'mute-hotkey-disabled',
 ] as const;
 export type ErrorCode = (typeof ERROR_CODES)[number];
 
@@ -146,6 +150,42 @@ export const MESSAGES: Catalogue = {
     ru: 'Перезагрузить',
     zh: '重新加载',
     cs: 'Načíst znovu',
+  },
+  'mute-hotkey-label': {
+    en: 'Global mute shortcut',
+    fr: 'Raccourci global du micro',
+    es: 'Atajo global de silencio',
+    it: 'Scorciatoia globale del microfono',
+    ru: 'Глобальная горячая клавиша микрофона',
+    zh: '全局静音快捷键',
+    cs: 'Globální zkratka ztlumení',
+  },
+  'mute-hotkey-hint': {
+    en: 'Click, then press a key combination. Backspace disables it.',
+    fr: 'Clique puis presse une combinaison de touches. Retour arrière pour désactiver.',
+    es: 'Haz clic y pulsa una combinación de teclas. Retroceso para desactivar.',
+    it: 'Clicca e premi una combinazione di tasti. Backspace per disattivare.',
+    ru: 'Нажмите на поле и введите сочетание клавиш. Backspace — отключить.',
+    zh: '点击后按下组合键。按退格键可禁用。',
+    cs: 'Klikněte a stiskněte kombinaci kláves. Backspace ji vypne.',
+  },
+  'mute-hotkey-reset': {
+    en: 'Reset',
+    fr: 'Réinitialiser',
+    es: 'Restablecer',
+    it: 'Ripristina',
+    ru: 'Сбросить',
+    zh: '重置',
+    cs: 'Obnovit',
+  },
+  'mute-hotkey-disabled': {
+    en: 'Disabled',
+    fr: 'Désactivé',
+    es: 'Desactivado',
+    it: 'Disattivato',
+    ru: 'Отключено',
+    zh: '已禁用',
+    cs: 'Vypnuto',
   },
 };
 
