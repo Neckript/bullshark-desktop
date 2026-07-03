@@ -24,3 +24,30 @@ jobs:
       - run: npx electron-builder --publish always
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload artifacts to Codeberg
+        continue-on-error: true
+        shell: bash
+        env:
+          CODEBERG_TOKEN: ${{ secrets.CODEBERG_TOKEN }}
+        run: |
+          TAG=${GITHUB_REF_NAME}
+          # Create release (idempotent — fall back to fetching it if it already exists)
+          RELEASE_ID=$(curl -sf \
+            -H "Authorization: token $CODEBERG_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "{\"tag_name\":\"$TAG\",\"name\":\"$TAG\"}" \
+            "https://codeberg.org/api/v1/repos/The_Neckript/bullshark-desktop/releases" \
+            | jq -r '.id' || \
+            curl -sf \
+              -H "Authorization: token $CODEBERG_TOKEN" \
+              "https://codeberg.org/api/v1/repos/The_Neckript/bullshark-desktop/releases/tags/$TAG" \
+              | jq -r '.id')
+          # Upload per-OS artifacts
+          for f in dist/*.exe dist/*.AppImage dist/*.dmg dist/*.zip dist/latest*.yml; do
+            [ -f "$f" ] || continue
+            curl -sf \
+              -H "Authorization: token $CODEBERG_TOKEN" \
+              -F "attachment=@$f" \
+              "https://codeberg.org/api/v1/repos/The_Neckript/bullshark-desktop/releases/$RELEASE_ID/assets" \
+              || true
+          done
