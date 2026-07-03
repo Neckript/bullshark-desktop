@@ -9,13 +9,13 @@ export const selectUpdaterKind = (platform: NodeJS.Platform, macSigned: boolean)
 
 // Strategy modules are imported dynamically so this module stays loadable in
 // unit tests (which cannot load electron-updater).
-export const initUpdater = async (opts: { repo: string; macSigned?: boolean }) => {
+export const initUpdater = async (opts: { macSigned?: boolean } = {}) => {
   const kind = selectUpdaterKind(process.platform, opts.macSigned ?? false);
   if (kind === 'native') {
     const { initNativeUpdater } = await import('./electron-updater-impl');
-    initNativeUpdater();
+    await initNativeUpdater();
   } else {
-    const { initGithubFallback } = await import('./github-fallback');
-    initGithubFallback(opts.repo);
+    const { initForgejoFallback } = await import('./github-fallback');
+    initForgejoFallback();
   }
 };

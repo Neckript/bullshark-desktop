@@ -1,11 +1,15 @@
 import { Notification, shell, app } from 'electron';
 
-// macOS unsigned: poll GitHub Releases; on a newer version, notify + open the page.
-export const initGithubFallback = (repo: string) => {
+const RELEASES_LATEST_URL =
+  'https://codeberg.org/api/v1/repos/The_Neckript/bullshark-desktop/releases/latest';
+
+// macOS unsigned: poll Codeberg (Forgejo) releases; on a newer version,
+// notify + open the release page.
+export const initForgejoFallback = () => {
   const check = async () => {
     try {
-      const res = await fetch(`https://api.github.com/repos/${repo}/releases/latest`, {
-        headers: { Accept: 'application/vnd.github+json' }
+      const res = await fetch(RELEASES_LATEST_URL, {
+        headers: { Accept: 'application/json' }
       });
       if (!res.ok) return;
       const latest = (await res.json()) as { tag_name: string; html_url: string };

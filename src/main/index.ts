@@ -31,7 +31,7 @@ if (!gotLock) {
     start();
     initTray(store);
     registerHotkeys(store);
-    void initUpdater({ repo: 'Neckript/bullshark-desktop' });
+    void initUpdater();
   });
   app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });
   app.on('will-quit', () => unregisterHotkeys());
