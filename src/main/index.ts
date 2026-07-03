@@ -4,6 +4,7 @@ import { setNotificationsMuted } from './notifications';
 import { createServerStore, electronStoreBackend } from './servers/store';
 import { initTray, refreshTray } from './tray';
 import { initUpdater } from './updater';
+import { registerHotkeys, unregisterHotkeys } from './hotkeys';
 import { openServerWindow } from './windows/main-window';
 import { openOnboarding } from './windows/servers-window';
 
@@ -29,9 +30,11 @@ if (!gotLock) {
     registerIpc(store, () => refreshTray(store));
     start();
     initTray(store);
+    registerHotkeys(store);
     void initUpdater({ repo: 'Neckript/bullshark-desktop' });
   });
   app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });
+  app.on('will-quit', () => unregisterHotkeys());
 }
 
 export { store };

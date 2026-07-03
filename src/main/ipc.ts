@@ -9,6 +9,7 @@ import type { Prefs, VoiceState } from '../shared/types';
 import { setVoiceState } from './voice-bridge';
 import { resolveLocale } from '../shared/i18n/locales';
 import { getSourceDtos, chooseSource, cancelShare } from './screen-share';
+import { registerHotkeys } from './hotkeys';
 
 type Store = ReturnType<typeof createServerStore>;
 
@@ -23,10 +24,11 @@ export const registerIpc = (store: Store, onVoiceState?: () => void) => {
   ipcMain.handle(IPC.prefsSet, (_e, patch: unknown) => {
     if (typeof patch !== 'object' || patch === null) return store.getPrefs();
     const p = patch as Record<string, unknown>;
-    const allowed: (keyof Prefs)[] = ['activeServerId', 'notificationsMuted', 'launchOnStartup', 'lastWindowBounds'];
+    const allowed: (keyof Prefs)[] = ['activeServerId', 'notificationsMuted', 'launchOnStartup', 'lastWindowBounds', 'muteHotkey'];
     const sanitized: Partial<Prefs> = {};
     for (const key of allowed) if (key in p) (sanitized as Record<string, unknown>)[key] = p[key];
     store.setPrefs(sanitized);
+    if ('muteHotkey' in sanitized) registerHotkeys(store);
     return store.getPrefs();
   });
 
