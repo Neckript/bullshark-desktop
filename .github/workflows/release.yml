@@ -30,28 +30,37 @@ jobs:
         env:
           CODEBERG_TOKEN: ${{ secrets.CODEBERG_TOKEN }}
         run: |
+          # NOTE: GitHub runs this with `bash -e -o pipefail`; every curl below
+          # is shielded with `|| true` + explicit HTTP-status logging so a
+          # Codeberg failure is diagnosable instead of killing the script.
           TAG=${GITHUB_REF_NAME}
+          API="https://codeberg.org/api/v1/repos/The_Neckript/bullshark-desktop"
           # Create release (idempotent — fall back to fetching it if it already exists)
-          RELEASE_ID=$(curl -sf \
+          CREATE_STATUS=$(curl -s -o create.json -w '%{http_code}' \
             -H "Authorization: token $CODEBERG_TOKEN" \
             -H "Content-Type: application/json" \
             -d "{\"tag_name\":\"$TAG\",\"name\":\"$TAG\"}" \
-            "https://codeberg.org/api/v1/repos/The_Neckript/bullshark-desktop/releases" \
-            | jq -r '.id' || \
-            curl -sf \
+            "$API/releases" || true)
+          echo "Codeberg create-release: HTTP $CREATE_STATUS"
+          RELEASE_ID=$(jq -r '.id // empty' create.json 2>/dev/null || true)
+          if [ -z "$RELEASE_ID" ]; then
+            FETCH_STATUS=$(curl -s -o fetch.json -w '%{http_code}' \
               -H "Authorization: token $CODEBERG_TOKEN" \
-              "https://codeberg.org/api/v1/repos/The_Neckript/bullshark-desktop/releases/tags/$TAG" \
-              | jq -r '.id')
+              "$API/releases/tags/$TAG" || true)
+            echo "Codeberg fetch-release: HTTP $FETCH_STATUS"
+            RELEASE_ID=$(jq -r '.id // empty' fetch.json 2>/dev/null || true)
+          fi
           if [ -z "$RELEASE_ID" ] || [ "$RELEASE_ID" = "null" ]; then
-            echo "::warning::Could not obtain Codeberg RELEASE_ID (missing/invalid CODEBERG_TOKEN?) — skipping Codeberg upload"
+            echo "::warning::Could not obtain Codeberg RELEASE_ID (create HTTP $CREATE_STATUS; check CODEBERG_TOKEN scope) — skipping Codeberg upload"
             exit 0
           fi
+          echo "Codeberg release id: $RELEASE_ID"
           # Upload per-OS artifacts
           for f in dist/*.exe dist/*.AppImage dist/*.dmg dist/*.zip dist/latest*.yml; do
             [ -f "$f" ] || continue
-            curl -sf \
+            UP_STATUS=$(curl -s -o /dev/null -w '%{http_code}' \
               -H "Authorization: token $CODEBERG_TOKEN" \
               -F "attachment=@$f" \
-              "https://codeberg.org/api/v1/repos/The_Neckript/bullshark-desktop/releases/$RELEASE_ID/assets" \
-              || true
+              "$API/releases/$RELEASE_ID/assets" || true)
+            echo "upload $(basename "$f"): HTTP $UP_STATUS"
           done
