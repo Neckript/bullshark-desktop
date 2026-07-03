@@ -42,6 +42,10 @@ jobs:
               -H "Authorization: token $CODEBERG_TOKEN" \
               "https://codeberg.org/api/v1/repos/The_Neckript/bullshark-desktop/releases/tags/$TAG" \
               | jq -r '.id')
+          if [ -z "$RELEASE_ID" ] || [ "$RELEASE_ID" = "null" ]; then
+            echo "::warning::Could not obtain Codeberg RELEASE_ID (missing/invalid CODEBERG_TOKEN?) — skipping Codeberg upload"
+            exit 0
+          fi
           # Upload per-OS artifacts
           for f in dist/*.exe dist/*.AppImage dist/*.dmg dist/*.zip dist/latest*.yml; do
             [ -f "$f" ] || continue
