@@ -106,12 +106,14 @@ Mounted inside `VoiceProvider`, mirroring the style of `use-ptt` / `use-vad`:
 - Cleans up the subscription on unmount (the preload API returns an
   unsubscribe function).
 
-### Sound cue — `helpers/sound-cues.ts` (new)
+### Sound cue — already implemented (no new code)
 
-- Two short distinct cues (~150 ms), WebAudio oscillators — no bundled assets:
-  lower pitch = muted, higher pitch = unmuted.
-- Triggered from `VoiceProvider` whenever `micMuted` changes **while in
-  voice**, any origin (UI, tray, hotkey).
+Code exploration revealed the cue already exists: `use-voice-controls.ts`
+plays `SoundType.OWN_USER_MUTED_MIC` / `OWN_USER_UNMUTED_MIC` (WebAudio
+oscillators in `features/server/sounds/actions.ts`) on **every** `toggleMic()`
+call. Since the bridge toggle goes through `toggleMic()`, the hotkey/tray path
+gets the cue for free. The originally planned `helpers/sound-cues.ts` module
+is dropped (YAGNI).
 
 ### Typings
 
@@ -135,8 +137,10 @@ Mounted inside `VoiceProvider`, mirroring the style of `use-ptt` / `use-vad`:
 - **Desktop** — `src/main/hotkeys.test.ts` (same style as `store.test.ts`):
   registration with default and custom accelerator, re-registration on pref
   change, invalid accelerator does not throw, unregister on quit.
-- **Client** — hook test with a mocked `window.bullshark`: `reportState`
-  called on state changes, toggle applied only when in voice, unsubscribe on
-  unmount. Sound-cue module smoke test (no-throw without AudioContext).
+- **Client** — the client app has no test infrastructure (no test script, no
+  test files, only the server workspace runs `bun test`). Adding a test
+  runner to the client is out of scope for this feature. The hook is kept
+  minimal (state mirroring + guarded toggle) and validated via
+  `bun run check-types`, `bun run lint`, and the manual pass below.
 - **Manual** — Windows: hotkey while a game/another app is focused; tray icon
   flips; beep audible; tray Microphone toggle now works.
