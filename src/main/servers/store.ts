@@ -9,7 +9,7 @@ export type StoreBackend = {
 
 export const createServerStore = (backend: StoreBackend) => {
   const listServers = (): ServerEntry[] => backend.get<ServerEntry[]>('servers', []);
-  const getPrefs = (): Prefs => backend.get<Prefs>('prefs', { ...DEFAULT_PREFS });
+  const getPrefs = (): Prefs => ({ ...DEFAULT_PREFS, ...backend.get<Partial<Prefs>>('prefs', {}) });
   const setPrefs = (patch: Partial<Prefs>) => backend.set('prefs', { ...getPrefs(), ...patch });
 
   const add = (url: string, label: string): ServerEntry => {

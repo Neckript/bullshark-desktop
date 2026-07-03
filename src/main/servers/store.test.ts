@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, test } from 'vitest';
+import { DEFAULT_MUTE_HOTKEY } from '../../shared/types';
 import { createServerStore, type StoreBackend } from './store';
 
 const memoryBackend = (): StoreBackend => {
@@ -42,5 +43,13 @@ describe('server store', () => {
     const a = store.add('https://a.com', 'A');
     store.remove(a.id);
     expect(store.getPrefs().activeServerId).toBeNull();
+  });
+  test('getPrefs merges defaults over stored partial prefs', () => {
+    const backend = memoryBackend();
+    // simulate prefs persisted by an older app version (no muteHotkey)
+    backend.set('prefs', { activeServerId: null, notificationsMuted: true });
+    const s = createServerStore(backend);
+    expect(s.getPrefs().muteHotkey).toBe(DEFAULT_MUTE_HOTKEY);
+    expect(s.getPrefs().notificationsMuted).toBe(true);
   });
 });
