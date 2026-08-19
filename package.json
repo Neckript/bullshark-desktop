@@ -1,6 +1,6 @@
 {
   "name": "bullshark-desktop",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Desktop app for self-hosted Bullshark",
   "main": "./out/main/index.js",
   "type": "module",
