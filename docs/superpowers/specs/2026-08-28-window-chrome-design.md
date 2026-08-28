@@ -264,10 +264,13 @@ ici : il demande deux serveurs de versions différentes.
   Il demanderait l'architecture concurrente (`WebContentsView`, le shell peint
   par-dessus le contenu distant) ; l.user a tranché pour la superposition le
   2026-08-28. Si le rail revient, cette décision sera à rouvrir.
-- **macOS et Linux** : la colonne gauche leur réserve la place, mais aucune
-  vérification n'est possible ici. `titleBarStyle: 'hidden'` se comporte
-  différemment sur macOS (pastilles natives, pas de superposition à colorer) —
-  à traiter le jour où une version macOS est réellement distribuée.
+- **macOS et Linux** : rien n'est réservé pour eux, contrairement à ce que le
+  §B laissait entendre. Les variables `titlebar-area-*` viennent de l'API Window
+  Controls Overlay, exposée sur **Windows et Linux seulement** ; sur macOS le
+  repli `0px` s'applique et la colonne gauche reste vide. `titleBarStyle:
+  'hidden'` s'y comporte de toute façon différemment (pastilles natives, pas de
+  superposition à colorer). À traiter le jour où une version macOS est
+  réellement distribuée, avec une mesure ou une constante, pas ces variables.
 - **Les quatre bandes ne deviennent pas une seule.** Fusionner l'en-tête de
   salon avec la bande de titre est le chantier suivant possible ; l.user n'a pas
   retenu « les bandes du haut » dans son diagnostic.
