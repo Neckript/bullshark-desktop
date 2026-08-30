@@ -118,6 +118,20 @@ export const openServerWindow = (server: ServerEntry) => {
         mainWindow?.hide();
       }
     });
+
+    // Le menu applicatif par defaut est supprime (il n'a jamais ete ecrit pour
+    // Bullshark) ; ces deux accelerateurs en venaient et sont les seuls a garder.
+    mainWindow.webContents.on('before-input-event', (_event, input) => {
+      if (input.type !== 'keyDown') return;
+
+      const key = input.key.toLowerCase();
+
+      if ((input.control || input.meta) && key === 'r') {
+        mainWindow?.webContents.reload();
+      } else if (key === 'f12' || (input.control && input.shift && key === 'i')) {
+        mainWindow?.webContents.toggleDevTools();
+      }
+    });
   } else {
     // Switching servers requires a fresh partition -> recreate the window.
     mainWindow.destroy();
