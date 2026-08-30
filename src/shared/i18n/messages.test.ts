@@ -29,4 +29,24 @@ describe('messages catalogue', () => {
     expect(t('update-available', 'fr')).toBe(MESSAGES['update-available'].fr);
     expect(t('reload', 'cs')).toBe(MESSAGES['reload'].cs);
   });
+  test('les codes de la fenêtre de réglages sont présents', () => {
+    for (const code of [
+      'nav-servers',
+      'nav-hotkeys',
+      'nav-about',
+      'servers-open',
+      'servers-remove',
+      'servers-add',
+      'servers-checking',
+      'servers-empty',
+      'onboarding-title',
+      'onboarding-hint',
+      'onboarding-connect',
+      'share-picker-title',
+      'share-picker-cancel',
+      'about-version'
+    ] as const) {
+      expect(ERROR_CODES).toContain(code);
+    }
+  });
 });
