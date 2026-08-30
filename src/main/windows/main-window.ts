@@ -4,7 +4,7 @@ import type { ServerEntry, UpdateBannerPayload } from '../../shared/types';
 import { applyNavigationGuards } from '../navigation';
 import { partitionForServer } from '../servers/session';
 import { fetchServerInfo } from '../servers/server-info';
-import { evaluateCompat } from '../servers/compat';
+import { evaluateCompat, supportsFramelessWindow } from '../servers/compat';
 import { shouldNotifyUpdate } from '../servers/update-check';
 import { resolveLocale } from '../../shared/i18n/locales';
 import { t } from '../../shared/i18n/messages';
@@ -93,12 +93,35 @@ const checkForServerUpdate = async (server: ServerEntry) => {
 };
 
 // Loads the remote Bullshark instance full-bleed in the server's own partition.
-export const openServerWindow = (server: ServerEntry) => {
+export const openServerWindow = async (server: ServerEntry) => {
   if (!mainWindow) {
+    // titleBarStyle se fixe a la construction de la fenetre et ne se bascule
+    // pas ensuite : la version doit etre connue AVANT le new BrowserWindow.
+    // Le cout de cet aller-retour est masque, la fenetre nait avec show: false.
+    const info = await fetchServerInfo(server.url);
+    const frameless = supportsFramelessWindow(info?.version ?? null);
+
     mainWindow = new BrowserWindow({
       width: 1100,
       height: 750,
+      // La bande de glissement vient du client, qui la rend en `hidden lg:grid`.
+      // Sous 1024 px elle disparait et une fenetre sans cadre deviendrait
+      // indeplacable : le plancher n'est pose que dans ce mode.
+      ...(frameless ? { minWidth: 1024 } : {}),
       show: false,
+      ...(frameless
+        ? {
+            titleBarStyle: 'hidden' as const,
+            // Couleurs provisoires : le client annonce les siennes des qu'il
+            // est charge. Ne PAS y mettre une couleur de marque, ce serait une
+            // seconde source de verite pour la palette.
+            titleBarOverlay: {
+              color: '#000000',
+              symbolColor: '#ffffff',
+              height: 48
+            }
+          }
+        : {}),
       webPreferences: {
         contextIsolation: true,
         sandbox: true,
@@ -136,7 +159,7 @@ export const openServerWindow = (server: ServerEntry) => {
     // Switching servers requires a fresh partition -> recreate the window.
     mainWindow.destroy();
     mainWindow = null;
-    openServerWindow(server);
+    await openServerWindow(server);
     return;
   }
   applyNavigationGuards(mainWindow.webContents, new URL(server.url).origin);

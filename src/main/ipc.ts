@@ -64,7 +64,7 @@ export const registerIpc = (store: Store, onVoiceState?: () => void) => {
     const server = store.list().find((s) => s.id === id);
     if (!server) return { ok: false, reason: 'not-found' };
     store.switchTo(id);
-    openServerWindow(server);
+    void openServerWindow(server);
     return { ok: true };
   });
 

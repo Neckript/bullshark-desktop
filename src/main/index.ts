@@ -12,7 +12,7 @@ const store = createServerStore(electronStoreBackend());
 
 const start = () => {
   const active = store.getActive();
-  if (active) openServerWindow(active);
+  if (active) void openServerWindow(active);
   else openOnboarding();
 };
 
