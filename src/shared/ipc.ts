@@ -9,6 +9,7 @@ export const IPC = {
   prefsSet: 'prefs:set',
   serversChanged: 'servers:changed',
   appLocale: 'app:locale',
+  appVersion: 'app:version',
   screenSources: 'screen:sources',
   screenPick: 'screen:pick',
   screenCancel: 'screen:cancel'

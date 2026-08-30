@@ -23,6 +23,7 @@ contextBridge.exposeInMainWorld('shell', {
     cancel: (): Promise<void> => ipcRenderer.invoke(IPC.screenCancel)
   },
   locale: (): Promise<Locale> => ipcRenderer.invoke(IPC.appLocale),
+  version: (): Promise<string> => ipcRenderer.invoke(IPC.appVersion),
   onServersChanged: (cb: () => void) => {
     const handler = () => cb();
     ipcRenderer.on(IPC.serversChanged, handler);

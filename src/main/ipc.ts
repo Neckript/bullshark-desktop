@@ -19,6 +19,7 @@ const broadcastServersChanged = () => {
 
 export const registerIpc = (store: Store, onVoiceState?: () => void) => {
   ipcMain.handle(IPC.appLocale, () => resolveLocale(app.getLocale()));
+  ipcMain.handle(IPC.appVersion, () => app.getVersion());
   ipcMain.handle(IPC.serversList, () => store.list());
   ipcMain.handle(IPC.prefsGet, () => store.getPrefs());
   ipcMain.handle(IPC.prefsSet, (_e, patch: unknown) => {

@@ -22,6 +22,7 @@ declare global {
         cancel: () => Promise<void>;
       };
       locale: () => Promise<Locale>;
+      version: () => Promise<string>;
       onServersChanged: (cb: () => void) => () => void;
     };
   }
