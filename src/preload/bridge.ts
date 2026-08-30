@@ -97,6 +97,8 @@ contextBridge.exposeInMainWorld('bullshark', {
       return () => ipcRenderer.removeListener(BRIDGE.voiceToggleRequest, h);
     }
   },
+  setTitleBarColors: (colors: { color: string; symbolColor: string }) =>
+    ipcRenderer.send(BRIDGE.titleBarColors, colors),
   focusWindow: () => ipcRenderer.send(BRIDGE.focusWindow),
   onMuteChanged: (cb: (muted: boolean) => void) => {
     const h = (_e: unknown, v: boolean) => cb(v);

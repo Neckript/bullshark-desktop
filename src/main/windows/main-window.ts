@@ -28,6 +28,25 @@ ipcMain.on(BRIDGE.reloadRequest, (event) => {
   if (win && !win.isDestroyed()) win.webContents.reload();
 });
 
+// Le client annonce les couleurs de son theme ; la superposition de la barre de
+// titre les prend. Sans cadre uniquement : setTitleBarOverlay leve sur une
+// fenetre a cadre classique.
+ipcMain.on(
+  BRIDGE.titleBarColors,
+  (event, colors: { color: string; symbolColor: string }) => {
+    const win = BrowserWindow.fromWebContents(event.sender);
+
+    if (!win || win.isDestroyed()) return;
+
+    try {
+      win.setTitleBarOverlay({ ...colors, height: 48 });
+    } catch {
+      // Fenetre ouverte avec son cadre (serveur sous le seuil) : il n'y a
+      // simplement pas de superposition a colorer.
+    }
+  }
+);
+
 export const getMainWindow = () => mainWindow;
 
 export const showMainWindow = () => {
