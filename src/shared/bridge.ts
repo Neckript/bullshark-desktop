@@ -9,5 +9,6 @@ export const BRIDGE = {
   focusWindow: 'bridge:focus-window',        // remote → main (show/focus the window)
   compat: 'bridge:compat',                   // main → remote ({ verdict, message })
   updateAvailable: 'bridge:update-available',// main → remote ({ message, reloadLabel })
-  reloadRequest: 'bridge:reload-request'     // remote → main (reload the page)
+  reloadRequest: 'bridge:reload-request',    // remote → main (reload the page)
+  titleBarColors: 'bridge:title-bar-colors'  // remote → main ({ color, symbolColor })
 } as const;

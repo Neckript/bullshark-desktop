@@ -1,5 +1,11 @@
 import { describe, expect, test } from 'vitest';
-import { evaluateCompat, MIN_SERVER_VERSION, MIN_SERVER_VERSION_NATIVE_FEATURES } from './compat';
+import {
+  evaluateCompat,
+  MIN_SERVER_VERSION,
+  MIN_SERVER_VERSION_FRAMELESS,
+  MIN_SERVER_VERSION_NATIVE_FEATURES,
+  supportsFramelessWindow
+} from './compat';
 
 describe('evaluateCompat', () => {
   test('null version → unknown', () => {
@@ -23,5 +29,27 @@ describe('evaluateCompat', () => {
   test('shipped defaults: floor is permissive, native layer dormant', () => {
     expect(MIN_SERVER_VERSION).toBe('0.0.0');
     expect(MIN_SERVER_VERSION_NATIVE_FEATURES).toBeNull();
+  });
+});
+
+describe('supportsFramelessWindow', () => {
+  test('version inconnue → cadre classique', () => {
+    expect(supportsFramelessWindow(null)).toBe(false);
+  });
+
+  test('sous le seuil → cadre classique', () => {
+    expect(supportsFramelessWindow('0.0.28')).toBe(false);
+  });
+
+  test('au seuil exact → sans cadre', () => {
+    expect(supportsFramelessWindow('0.0.29')).toBe(true);
+  });
+
+  test('au-dessus du seuil → sans cadre', () => {
+    expect(supportsFramelessWindow('0.1.0')).toBe(true);
+  });
+
+  test('le seuil est bien celui qui est publié', () => {
+    expect(MIN_SERVER_VERSION_FRAMELESS).toBe('0.0.29');
   });
 });
