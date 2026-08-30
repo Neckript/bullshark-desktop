@@ -21,7 +21,7 @@ export const SharePicker = () => {
   }, []);
 
   return (
-    <div className="app-content">
+    <div className="app-content app-content--picker">
       <h2 className="app-section-title">{t('share-picker-title', locale)}</h2>
 
       <div className="app-grid-sources">

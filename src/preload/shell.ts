@@ -24,6 +24,7 @@ contextBridge.exposeInMainWorld('shell', {
   },
   locale: (): Promise<Locale> => ipcRenderer.invoke(IPC.appLocale),
   version: (): Promise<string> => ipcRenderer.invoke(IPC.appVersion),
+  openRepository: (): Promise<void> => ipcRenderer.invoke(IPC.appRepository),
   onServersChanged: (cb: () => void) => {
     const handler = () => cb();
     ipcRenderer.on(IPC.serversChanged, handler);

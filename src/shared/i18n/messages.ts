@@ -33,6 +33,7 @@ export const ERROR_CODES = [
   'share-picker-title',
   'share-picker-cancel',
   'about-version',
+  'about-repository',
 ] as const;
 export type ErrorCode = (typeof ERROR_CODES)[number];
 
@@ -326,6 +327,15 @@ export const MESSAGES: Catalogue = {
     ru: 'Версия',
     zh: '版本',
     cs: 'Verze',
+  },
+  'about-repository': {
+    en: 'Repository',
+    fr: 'Dépôt',
+    es: 'Repositorio',
+    it: 'Repository',
+    ru: 'Репозиторий',
+    zh: '代码仓库',
+    cs: 'Repozitář',
   },
 };
 

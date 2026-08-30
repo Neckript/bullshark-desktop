@@ -23,6 +23,7 @@ declare global {
       };
       locale: () => Promise<Locale>;
       version: () => Promise<string>;
+      openRepository: () => Promise<void>;
       onServersChanged: (cb: () => void) => () => void;
     };
   }

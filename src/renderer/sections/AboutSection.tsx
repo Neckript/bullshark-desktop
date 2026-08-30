@@ -16,6 +16,14 @@ export const AboutSection = ({
       <div className="app-muted">
         {t('about-version', locale)} {version || '—'}
       </div>
+      <div style={{ marginTop: 12 }}>
+        <button
+          className="app-button"
+          onClick={() => void window.shell.openRepository()}
+        >
+          {t('about-repository', locale)}
+        </button>
+      </div>
     </div>
   </>
 );

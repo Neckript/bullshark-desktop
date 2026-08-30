@@ -39,6 +39,7 @@ export const Servers = () => {
                   ? 'app-nav-item app-nav-item--active'
                   : 'app-nav-item'
               }
+              aria-current={s.id === section ? 'page' : undefined}
               onClick={() => setSection(s.id)}
             >
               {t(s.code, locale)}

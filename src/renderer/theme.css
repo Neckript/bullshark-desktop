@@ -19,6 +19,7 @@
 @import '@fontsource/geist-sans/600.css';
 
 :root {
+  color-scheme: dark;
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.205 0 0);
@@ -98,7 +99,6 @@ body {
 }
 
 .app-nav-item:hover {
-  background: var(--muted);
   color: var(--foreground);
 }
 
@@ -163,6 +163,16 @@ body {
   outline-offset: -1px;
 }
 
+/* Bonus autorisé (voir constat 4) : la traversée clavier de .app-button,
+   .app-nav-item et .app-source s'en remettait à l'anneau par défaut du
+   navigateur. Même traitement que .app-input:focus. */
+.app-button:focus-visible,
+.app-nav-item:focus-visible,
+.app-source:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: -1px;
+}
+
 .app-button {
   appearance: none;
   border: 1px solid var(--border);
@@ -217,7 +227,21 @@ body {
   margin: 0;
 }
 
-/* Sélecteur de partage d'écran. */
+/* Sélecteur de partage d'écran : colonne flex pour que le bouton Annuler
+   reste toujours dans le cadre d'une fenêtre non redimensionnable, quel que
+   soit le nombre de sources. Classe dédiée : `.app-content` sert aussi à la
+   fenêtre de réglages (redimensionnable), qui ne doit pas hériter de ce
+   comportement. */
+.app-content--picker {
+  display: flex;
+  flex-direction: column;
+}
+
+.app-content--picker .app-grid-sources {
+  flex: 1;
+  min-height: 0;
+}
+
 .app-grid-sources {
   display: grid;
   grid-template-columns: repeat(2, 1fr);

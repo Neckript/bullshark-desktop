@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain } from 'electron';
+import { app, BrowserWindow, ipcMain, shell } from 'electron';
 import { IPC } from '../shared/ipc';
 import { BRIDGE } from '../shared/bridge';
 import { normalizeServerUrl } from './servers/url';
@@ -13,6 +13,11 @@ import { registerHotkeys } from './hotkeys';
 
 type Store = ReturnType<typeof createServerStore>;
 
+// Reprend `repository.url` de package.json (sans le suffixe .git, pour ouvrir
+// la page du dépôt plutôt qu'une URL de clonage) : ne le réécris pas de tête,
+// relis package.json si ce dépôt déménage à nouveau.
+const REPOSITORY_URL = 'https://github.com/Neckript/bullshark-desktop';
+
 const broadcastServersChanged = () => {
   BrowserWindow.getAllWindows().forEach((w) => w.webContents.send(IPC.serversChanged));
 };
@@ -20,6 +25,11 @@ const broadcastServersChanged = () => {
 export const registerIpc = (store: Store, onVoiceState?: () => void) => {
   ipcMain.handle(IPC.appLocale, () => resolveLocale(app.getLocale()));
   ipcMain.handle(IPC.appVersion, () => app.getVersion());
+  // Aucun argument : le renderer ne choisit rien, le canal ouvre uniquement
+  // la constante ci-dessus.
+  ipcMain.handle(IPC.appRepository, () => {
+    void shell.openExternal(REPOSITORY_URL);
+  });
   ipcMain.handle(IPC.serversList, () => store.list());
   ipcMain.handle(IPC.prefsGet, () => store.getPrefs());
   ipcMain.handle(IPC.prefsSet, (_e, patch: unknown) => {
