@@ -55,12 +55,22 @@ jobs:
             exit 0
           fi
           echo "Codeberg release id: $RELEASE_ID"
-          # Upload per-OS artifacts
-          for f in dist/*.exe dist/*.AppImage dist/*.dmg dist/*.zip dist/latest*.yml; do
+          # Upload per-OS artifacts.
+          # The asset name MUST match what latest.yml points at, or the updater
+          # 404s on download after correctly detecting the new version — and it
+          # does so silently. electron-builder normalises spaces to dashes when
+          # it writes latest.yml for the GitHub publisher ("Bullshark Setup
+          # 0.1.7.exe" becomes "Bullshark-Setup-0.1.7.exe"), so the same
+          # normalisation has to be applied here; curl otherwise names the asset
+          # after the raw basename, spaces included.
+          # .blockmap files are included so electron-updater can do differential
+          # downloads instead of pulling the whole installer every time.
+          for f in dist/*.exe dist/*.AppImage dist/*.dmg dist/*.zip dist/*.blockmap dist/latest*.yml; do
             [ -f "$f" ] || continue
+            ASSET_NAME=$(basename "$f" | tr ' ' '-')
             UP_STATUS=$(curl -s -o /dev/null -w '%{http_code}' \
               -H "Authorization: token $CODEBERG_TOKEN" \
-              -F "attachment=@$f" \
+              -F "attachment=@${f};filename=${ASSET_NAME}" \
               "$API/releases/$RELEASE_ID/assets" || true)
-            echo "upload $(basename "$f"): HTTP $UP_STATUS"
+            echo "upload ${ASSET_NAME}: HTTP $UP_STATUS"
           done
