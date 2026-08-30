@@ -4,7 +4,7 @@ import type { ServerEntry, UpdateBannerPayload } from '../../shared/types';
 import { applyNavigationGuards } from '../navigation';
 import { partitionForServer } from '../servers/session';
 import { fetchServerInfo } from '../servers/server-info';
-import { evaluateCompat } from '../servers/compat';
+import { evaluateCompat, supportsFramelessWindow } from '../servers/compat';
 import { shouldNotifyUpdate } from '../servers/update-check';
 import { resolveLocale } from '../../shared/i18n/locales';
 import { t } from '../../shared/i18n/messages';
@@ -27,6 +27,25 @@ ipcMain.on(BRIDGE.reloadRequest, (event) => {
   const win = BrowserWindow.fromWebContents(event.sender);
   if (win && !win.isDestroyed()) win.webContents.reload();
 });
+
+// Le client annonce les couleurs de son theme ; la superposition de la barre de
+// titre les prend. Sans cadre uniquement : setTitleBarOverlay leve sur une
+// fenetre a cadre classique.
+ipcMain.on(
+  BRIDGE.titleBarColors,
+  (event, colors: { color: string; symbolColor: string }) => {
+    const win = BrowserWindow.fromWebContents(event.sender);
+
+    if (!win || win.isDestroyed()) return;
+
+    try {
+      win.setTitleBarOverlay({ ...colors, height: 48 });
+    } catch {
+      // Fenetre ouverte avec son cadre (serveur sous le seuil) : il n'y a
+      // simplement pas de superposition a colorer.
+    }
+  }
+);
 
 export const getMainWindow = () => mainWindow;
 
@@ -93,12 +112,35 @@ const checkForServerUpdate = async (server: ServerEntry) => {
 };
 
 // Loads the remote Bullshark instance full-bleed in the server's own partition.
-export const openServerWindow = (server: ServerEntry) => {
+export const openServerWindow = async (server: ServerEntry) => {
   if (!mainWindow) {
+    // titleBarStyle se fixe a la construction de la fenetre et ne se bascule
+    // pas ensuite : la version doit etre connue AVANT le new BrowserWindow.
+    // Le cout de cet aller-retour est masque, la fenetre nait avec show: false.
+    const info = await fetchServerInfo(server.url);
+    const frameless = supportsFramelessWindow(info?.version ?? null);
+
     mainWindow = new BrowserWindow({
       width: 1100,
       height: 750,
+      // La bande de glissement vient du client, qui la rend en `hidden lg:grid`.
+      // Sous 1024 px elle disparait et une fenetre sans cadre deviendrait
+      // indeplacable : le plancher n'est pose que dans ce mode.
+      ...(frameless ? { minWidth: 1024 } : {}),
       show: false,
+      ...(frameless
+        ? {
+            titleBarStyle: 'hidden' as const,
+            // Couleurs provisoires : le client annonce les siennes des qu'il
+            // est charge. Ne PAS y mettre une couleur de marque, ce serait une
+            // seconde source de verite pour la palette.
+            titleBarOverlay: {
+              color: '#000000',
+              symbolColor: '#ffffff',
+              height: 48
+            }
+          }
+        : {}),
       webPreferences: {
         contextIsolation: true,
         sandbox: true,
@@ -118,11 +160,25 @@ export const openServerWindow = (server: ServerEntry) => {
         mainWindow?.hide();
       }
     });
+
+    // Le menu applicatif par defaut est supprime (il n'a jamais ete ecrit pour
+    // Bullshark) ; ces deux accelerateurs en venaient et sont les seuls a garder.
+    mainWindow.webContents.on('before-input-event', (_event, input) => {
+      if (input.type !== 'keyDown') return;
+
+      const key = input.key.toLowerCase();
+
+      if ((input.control || input.meta) && key === 'r') {
+        mainWindow?.webContents.reload();
+      } else if (key === 'f12' || (input.control && input.shift && key === 'i')) {
+        mainWindow?.webContents.toggleDevTools();
+      }
+    });
   } else {
     // Switching servers requires a fresh partition -> recreate the window.
     mainWindow.destroy();
     mainWindow = null;
-    openServerWindow(server);
+    await openServerWindow(server);
     return;
   }
   applyNavigationGuards(mainWindow.webContents, new URL(server.url).origin);

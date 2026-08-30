@@ -42,7 +42,7 @@ export const refreshTray = (store: Store) => {
         click: () => {
           store.switchTo(s.id);
           const next = store.getActive();
-          if (next) openServerWindow(next);
+          if (next) void openServerWindow(next);
           refreshTray(store);
         }
       })),
