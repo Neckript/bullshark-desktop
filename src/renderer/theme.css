@@ -1,0 +1,262 @@
+/* --------------------------------------------------------------------------
+   Thème du shell — COPIE FIGÉE.
+
+   Source de vérité : apps/client/src/index.css du dépôt `bullshark`, bloc
+   `.dark`. Ces valeurs sont recopiées à la main et NE SE SYNCHRONISENT PAS.
+   Quand le thème du client change, ce fichier doit être remis à jour ici.
+
+   Pourquoi une copie : le shell s'affiche avant qu'un serveur soit connu, hors
+   ligne, dans un autre build. Il ne peut pas demander ses jetons au serveur.
+
+   Un seul thème, le sombre : le client en a cinq plus un sur mesure, et le
+   shell ne peut pas savoir lequel est actif.
+
+   Spec : docs/superpowers/specs/2026-08-30-shell-settings-window-design.md
+   -------------------------------------------------------------------------- */
+
+@import '@fontsource/geist-sans/400.css';
+@import '@fontsource/geist-sans/500.css';
+@import '@fontsource/geist-sans/600.css';
+
+:root {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --sidebar: oklch(0.12 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --radius: 0.75rem;
+  --font-sans: 'Geist Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Coquille à deux colonnes de la fenêtre de réglages. */
+.app-shell {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  height: 100%;
+}
+
+.app-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px 12px;
+  background: var(--sidebar);
+  border-right: 1px solid var(--border);
+}
+
+.app-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 8px;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.app-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.app-nav-item {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--muted-foreground);
+  font: inherit;
+  text-align: left;
+  padding: 8px 10px;
+  border-radius: calc(var(--radius) - 4px);
+  cursor: pointer;
+}
+
+.app-nav-item:hover {
+  background: var(--muted);
+  color: var(--foreground);
+}
+
+.app-nav-item--active {
+  background: var(--muted);
+  color: var(--foreground);
+  font-weight: 500;
+}
+
+.app-sidebar-footer {
+  margin-top: auto;
+  padding: 0 10px;
+  color: var(--muted-foreground);
+  font-size: 12px;
+}
+
+.app-content {
+  padding: 24px 28px;
+  overflow-y: auto;
+}
+
+.app-section-title {
+  margin: 0 0 16px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.app-card {
+  background: var(--card);
+  color: var(--card-foreground);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin-bottom: 12px;
+}
+
+.app-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.app-field {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.app-input {
+  flex: 1;
+  min-width: 0;
+  background: var(--input);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) - 4px);
+  padding: 8px 10px;
+  font: inherit;
+}
+
+.app-input:focus {
+  outline: 2px solid var(--primary);
+  outline-offset: -1px;
+}
+
+.app-button {
+  appearance: none;
+  border: 1px solid var(--border);
+  background: var(--muted);
+  color: var(--foreground);
+  font: inherit;
+  padding: 8px 12px;
+  border-radius: calc(var(--radius) - 4px);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.app-button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.app-button--primary {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border-color: transparent;
+  font-weight: 500;
+}
+
+.app-button--danger {
+  background: transparent;
+  color: var(--destructive);
+  border-color: var(--destructive);
+}
+
+.app-error {
+  margin: 8px 0 0;
+  color: var(--destructive);
+}
+
+.app-muted {
+  color: var(--muted-foreground);
+}
+
+/* Onboarding : un seul bloc centré. */
+.app-center {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.app-center .app-card {
+  width: 100%;
+  max-width: 420px;
+  margin: 0;
+}
+
+/* Sélecteur de partage d'écran. */
+.app-grid-sources {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  max-height: 380px;
+  overflow: auto;
+}
+
+.app-source {
+  appearance: none;
+  text-align: left;
+  padding: 8px;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) - 4px);
+  background: var(--card);
+  color: var(--card-foreground);
+  font: inherit;
+}
+
+.app-source:hover {
+  border-color: var(--primary);
+}
+
+.app-source-thumb {
+  width: 100%;
+  height: 120px;
+  object-fit: contain;
+  background: var(--background);
+  border-radius: calc(var(--radius) - 8px);
+}
+
+.app-source-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
