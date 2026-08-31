@@ -1,5 +1,5 @@
-import { app, BrowserWindow, ipcMain } from 'electron';
-import { IPC } from '../shared/ipc';
+import { app, BrowserWindow, ipcMain, shell } from 'electron';
+import { IPC, REPOSITORY_TARGETS, type RepositoryTarget } from '../shared/ipc';
 import { BRIDGE } from '../shared/bridge';
 import { normalizeServerUrl } from './servers/url';
 import { probeServer } from './servers/validate';
@@ -13,12 +13,32 @@ import { registerHotkeys } from './hotkeys';
 
 type Store = ReturnType<typeof createServerStore>;
 
+// Les deux faces du dépôt, dans l'ordre d'affichage. Codeberg est le dépôt
+// souverain (remote `origin`), GitHub n'en est que le miroir (remote `github`,
+// celui qui déclenche la CI) — c'est aussi l'URL que porte `repository.url` de
+// package.json. Ne les réécris pas de tête : relis `git remote -v`.
+const REPOSITORY_URLS: Record<RepositoryTarget, string> = {
+  codeberg: 'https://codeberg.org/The_Neckript/bullshark-desktop',
+  github: 'https://github.com/Neckript/bullshark-desktop'
+};
+
+const isRepositoryTarget = (value: unknown): value is RepositoryTarget =>
+  REPOSITORY_TARGETS.includes(value as RepositoryTarget);
+
 const broadcastServersChanged = () => {
   BrowserWindow.getAllWindows().forEach((w) => w.webContents.send(IPC.serversChanged));
 };
 
 export const registerIpc = (store: Store, onVoiceState?: () => void) => {
   ipcMain.handle(IPC.appLocale, () => resolveLocale(app.getLocale()));
+  ipcMain.handle(IPC.appVersion, () => app.getVersion());
+  // Le renderer choisit une CLE dans une liste fermee, jamais une URL : un
+  // pont qui ouvrirait une URL arbitraire serait une surface d'attaque. Une
+  // cle inconnue n'ouvre rien.
+  ipcMain.handle(IPC.appRepository, (_e, target: unknown) => {
+    if (!isRepositoryTarget(target)) return;
+    void shell.openExternal(REPOSITORY_URLS[target]);
+  });
   ipcMain.handle(IPC.serversList, () => store.list());
   ipcMain.handle(IPC.prefsGet, () => store.getPrefs());
   ipcMain.handle(IPC.prefsSet, (_e, patch: unknown) => {
