@@ -48,11 +48,23 @@ describe('buildTrayTemplate', () => {
     expect(cs).not.toContain(MESSAGES['tray-quit'].fr);
   });
 
-  test("l'entree qui ouvre les reglages ne s'appelle plus 'Manage servers'", () => {
-    const sub = find(buildTrayTemplate(input()), MESSAGES['tray-servers'].fr)
-      ?.submenu as MenuItemConstructorOptions[];
-    expect(labels(sub)).toContain(MESSAGES['tray-settings'].fr);
+  test('les reglages sont a la RACINE, pas dans le sous-menu des serveurs', () => {
+    const template = buildTrayTemplate(input());
+    expect(labels(template)).toContain(MESSAGES['tray-settings'].fr);
+
+    // Le sous-menu ne sert plus qu'a montrer et changer de serveur : ni entree
+    // de reglages, ni separateur devenu inutile.
+    const sub = find(template, MESSAGES['tray-servers'].fr)?.submenu as MenuItemConstructorOptions[];
+    expect(labels(sub)).not.toContain(MESSAGES['tray-settings'].fr);
     expect(labels(sub)).not.toContain('Manage servers…');
+    expect(sub.every((i) => i.type === 'radio')).toBe(true);
+  });
+
+  test('cliquer les reglages a la racine appelle openSettings', () => {
+    const openSettings = vi.fn();
+    const template = buildTrayTemplate(input({ actions: { ...actions(), openSettings } }));
+    (find(template, MESSAGES['tray-settings'].fr)?.click as () => void)();
+    expect(openSettings).toHaveBeenCalledTimes(1);
   });
 
   test('le sous-menu coche le serveur actif et lui seul', () => {
@@ -70,6 +82,16 @@ describe('buildTrayTemplate', () => {
     const second = sub.filter((i) => i.type === 'radio')[1];
     (second.click as () => void)();
     expect(switchServer).toHaveBeenCalledWith('b');
+  });
+
+  test('sans aucun serveur, le sous-menu est desactive au lieu de s ouvrir vide', () => {
+    const entry = find(buildTrayTemplate(input({ servers: [], activeId: null })),
+      MESSAGES['tray-servers'].fr);
+    expect(entry?.enabled).toBe(false);
+    // Les reglages, eux, restent atteignables : c'est par la qu'on ajoute un
+    // premier serveur.
+    expect(labels(buildTrayTemplate(input({ servers: [], activeId: null }))))
+      .toContain(MESSAGES['tray-settings'].fr);
   });
 
   test('le micro est desactive hors vocal, actif dedans', () => {

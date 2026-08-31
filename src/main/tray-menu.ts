@@ -55,20 +55,23 @@ export const buildTrayTemplate = ({
     },
     { type: 'separator' },
     {
+      // Le sous-menu ne sert qu'a voir et changer de serveur. Les reglages sont
+      // a la racine : ils ne concernent pas que les serveurs, et les enterrer
+      // sous « Serveurs » les rendait introuvables.
       label: t('tray-servers', locale),
-      submenu: [
-        ...servers.map(
-          (s): MenuItemConstructorOptions => ({
-            label: s.label || s.url,
-            type: 'radio',
-            checked: s.id === activeId,
-            click: () => actions.switchServer(s.id)
-          })
-        ),
-        { type: 'separator' },
-        { label: t('tray-settings', locale), click: actions.openSettings }
-      ]
+      // Sans aucun serveur, le sous-menu s'ouvrirait vide : on le desactive.
+      // Les reglages restent atteignables, c'est par la qu'on en ajoute un.
+      enabled: servers.length > 0,
+      submenu: servers.map(
+        (s): MenuItemConstructorOptions => ({
+          label: s.label || s.url,
+          type: 'radio',
+          checked: s.id === activeId,
+          click: () => actions.switchServer(s.id)
+        })
+      )
     },
+    { label: t('tray-settings', locale), click: actions.openSettings },
     { type: 'separator' },
     { label: t('tray-show', locale), click: actions.showApp },
     { label: t('tray-quit', locale), click: actions.quit }
