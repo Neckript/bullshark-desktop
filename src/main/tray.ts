@@ -3,7 +3,9 @@ import { join } from 'node:path';
 import { isNotificationsMuted, setNotificationsMuted } from './notifications';
 import { getVoiceState, requestVoiceToggle } from './voice-bridge';
 import { openServerWindow, showMainWindow } from './windows/main-window';
-import { openServersManager } from './windows/servers-window';
+import { openSettingsWindow } from './windows/servers-window';
+import { buildTrayTemplate } from './tray-menu';
+import { resolveLocale } from '../shared/i18n/locales';
 import type { createServerStore } from './servers/store';
 
 type Store = ReturnType<typeof createServerStore>;
@@ -23,36 +25,38 @@ export const refreshTray = (store: Store) => {
   tray.setImage(iconFor(state));
 
   const active = store.getActive();
-  const menu = Menu.buildFromTemplate([
-    { label: active ? `Bullshark — ${active.label || active.url}` : 'Bullshark', enabled: false },
-    { type: 'separator' },
-    { label: 'Notifications', type: 'checkbox', checked: !isNotificationsMuted(),
-      click: () => {
-        const next = !isNotificationsMuted();
-        setNotificationsMuted(next);
-        store.setPrefs({ notificationsMuted: next });
-        refreshTray(store);
-      } },
-    { label: 'Microphone', type: 'checkbox', checked: voice.inVoice && !voice.muted, enabled: voice.inVoice,
-      click: () => requestVoiceToggle() },
-    { type: 'separator' },
-    { label: 'Servers', submenu: [
-      ...store.list().map((s) => ({
-        label: s.label || s.url, type: 'radio' as const, checked: s.id === active?.id,
-        click: () => {
-          store.switchTo(s.id);
+  const menu = Menu.buildFromTemplate(
+    buildTrayTemplate({
+      // Meme resolution que le canal `app:locale` du renderer, pour que le menu
+      // et les fenetres ne parlent jamais deux langues differentes.
+      locale: resolveLocale(app.getLocale()),
+      servers: store.list(),
+      activeId: active?.id ?? null,
+      voice,
+      notificationsMuted: isNotificationsMuted(),
+      actions: {
+        toggleNotifications: () => {
+          const next = !isNotificationsMuted();
+          setNotificationsMuted(next);
+          store.setPrefs({ notificationsMuted: next });
+          refreshTray(store);
+        },
+        toggleMicrophone: () => requestVoiceToggle(),
+        switchServer: (id) => {
+          store.switchTo(id);
           const next = store.getActive();
           if (next) void openServerWindow(next);
           refreshTray(store);
+        },
+        openSettings: () => openSettingsWindow(),
+        showApp: () => showMainWindow(),
+        quit: () => {
+          (global as { isQuitting?: boolean }).isQuitting = true;
+          app.quit();
         }
-      })),
-      { type: 'separator' as const },
-      { label: 'Manage servers…', click: () => openServersManager() }
-    ] },
-    { type: 'separator' },
-    { label: 'Show Bullshark', click: () => showMainWindow() },
-    { label: 'Quit', click: () => { (global as { isQuitting?: boolean }).isQuitting = true; app.quit(); } }
-  ]);
+      }
+    })
+  );
   tray.setContextMenu(menu);
 };
 
