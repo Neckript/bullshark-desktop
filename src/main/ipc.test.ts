@@ -17,18 +17,41 @@ describe('registerIpc', () => {
     expect((handler as () => string)()).toBe(app.getVersion());
   });
 
-  test('wires app:repository to shell.openExternal with a fixed URL, ignoring any argument', () => {
+  test('app:repository maps each closed-list key to its own host', () => {
     registerIpc({} as unknown as Store);
 
     const spy = vi.spyOn(shell, 'openExternal');
-    const handler = ipcMain.handlers.get(IPC.appRepository);
+    const handler = ipcMain.handlers.get(IPC.appRepository) as (
+      e: unknown,
+      arg: unknown
+    ) => void;
     expect(typeof handler).toBe('function');
 
-    (handler as (e: unknown, arg: unknown) => void)(undefined, 'https://evil.example');
+    handler(undefined, 'codeberg');
+    handler(undefined, 'github');
 
-    expect(spy).toHaveBeenCalledTimes(1);
-    const [url] = spy.mock.calls[0];
-    expect(url).not.toBe('https://evil.example');
-    expect(url).toMatch(/^https:\/\//);
+    expect(spy.mock.calls.map(([url]) => url)).toEqual([
+      expect.stringContaining('codeberg.org'),
+      expect.stringContaining('github.com')
+    ]);
+    spy.mockRestore();
+  });
+
+  test('app:repository opens nothing for a key outside the list', () => {
+    registerIpc({} as unknown as Store);
+
+    const spy = vi.spyOn(shell, 'openExternal');
+    const handler = ipcMain.handlers.get(IPC.appRepository) as (
+      e: unknown,
+      arg: unknown
+    ) => void;
+
+    // Le renderer ne transmet jamais d'URL : une URL passee en argument doit
+    // etre refusee comme n'importe quelle cle inconnue.
+    handler(undefined, 'https://evil.example');
+    handler(undefined, undefined);
+
+    expect(spy).not.toHaveBeenCalled();
+    spy.mockRestore();
   });
 });

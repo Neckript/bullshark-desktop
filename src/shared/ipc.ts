@@ -15,3 +15,8 @@ export const IPC = {
   screenPick: 'screen:pick',
   screenCancel: 'screen:cancel'
 } as const;
+
+// Cibles acceptees par le canal `app:repository`. Liste FERMEE : le renderer
+// choisit dans cet ensemble, il ne transmet jamais d'URL. Voir src/main/ipc.ts.
+export const REPOSITORY_TARGETS = ['codeberg', 'github'] as const;
+export type RepositoryTarget = (typeof REPOSITORY_TARGETS)[number];

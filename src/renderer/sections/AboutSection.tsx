@@ -16,12 +16,21 @@ export const AboutSection = ({
       <div className="app-muted">
         {t('about-version', locale)} {version || '—'}
       </div>
-      <div style={{ marginTop: 12 }}>
+      <div className="app-actions">
+        <span className="app-muted">{t('about-repository', locale)}</span>
+        {/* Codeberg d'abord : c'est le dépôt souverain. GitHub n'est que le
+            miroir qui déclenche la CI. */}
         <button
           className="app-button"
-          onClick={() => void window.shell.openRepository()}
+          onClick={() => void window.shell.openRepository('codeberg')}
         >
-          {t('about-repository', locale)}
+          Codeberg
+        </button>
+        <button
+          className="app-button"
+          onClick={() => void window.shell.openRepository('github')}
+        >
+          GitHub
         </button>
       </div>
     </div>

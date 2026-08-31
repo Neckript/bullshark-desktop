@@ -1,5 +1,5 @@
 import { app, BrowserWindow, ipcMain, shell } from 'electron';
-import { IPC } from '../shared/ipc';
+import { IPC, REPOSITORY_TARGETS, type RepositoryTarget } from '../shared/ipc';
 import { BRIDGE } from '../shared/bridge';
 import { normalizeServerUrl } from './servers/url';
 import { probeServer } from './servers/validate';
@@ -13,10 +13,17 @@ import { registerHotkeys } from './hotkeys';
 
 type Store = ReturnType<typeof createServerStore>;
 
-// Reprend `repository.url` de package.json (sans le suffixe .git, pour ouvrir
-// la page du dépôt plutôt qu'une URL de clonage) : ne le réécris pas de tête,
-// relis package.json si ce dépôt déménage à nouveau.
-const REPOSITORY_URL = 'https://github.com/Neckript/bullshark-desktop';
+// Les deux faces du dépôt, dans l'ordre d'affichage. Codeberg est le dépôt
+// souverain (remote `origin`), GitHub n'en est que le miroir (remote `github`,
+// celui qui déclenche la CI) — c'est aussi l'URL que porte `repository.url` de
+// package.json. Ne les réécris pas de tête : relis `git remote -v`.
+const REPOSITORY_URLS: Record<RepositoryTarget, string> = {
+  codeberg: 'https://codeberg.org/The_Neckript/bullshark-desktop',
+  github: 'https://github.com/Neckript/bullshark-desktop'
+};
+
+const isRepositoryTarget = (value: unknown): value is RepositoryTarget =>
+  REPOSITORY_TARGETS.includes(value as RepositoryTarget);
 
 const broadcastServersChanged = () => {
   BrowserWindow.getAllWindows().forEach((w) => w.webContents.send(IPC.serversChanged));
@@ -25,10 +32,12 @@ const broadcastServersChanged = () => {
 export const registerIpc = (store: Store, onVoiceState?: () => void) => {
   ipcMain.handle(IPC.appLocale, () => resolveLocale(app.getLocale()));
   ipcMain.handle(IPC.appVersion, () => app.getVersion());
-  // Aucun argument : le renderer ne choisit rien, le canal ouvre uniquement
-  // la constante ci-dessus.
-  ipcMain.handle(IPC.appRepository, () => {
-    void shell.openExternal(REPOSITORY_URL);
+  // Le renderer choisit une CLE dans une liste fermee, jamais une URL : un
+  // pont qui ouvrirait une URL arbitraire serait une surface d'attaque. Une
+  // cle inconnue n'ouvre rien.
+  ipcMain.handle(IPC.appRepository, (_e, target: unknown) => {
+    if (!isRepositoryTarget(target)) return;
+    void shell.openExternal(REPOSITORY_URLS[target]);
   });
   ipcMain.handle(IPC.serversList, () => store.list());
   ipcMain.handle(IPC.prefsGet, () => store.getPrefs());

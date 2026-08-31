@@ -141,6 +141,14 @@ body {
   gap: 8px;
 }
 
+/* Rangée d'actions en pied de carte. */
+.app-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+
 .app-field {
   display: flex;
   gap: 8px;

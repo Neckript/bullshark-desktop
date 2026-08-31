@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron';
-import { IPC } from '../shared/ipc';
+import { IPC, type RepositoryTarget } from '../shared/ipc';
 import type { Prefs, ServerEntry, SourceDto } from '../shared/types';
 import type { Locale } from '../shared/i18n/locales';
 
@@ -24,7 +24,8 @@ contextBridge.exposeInMainWorld('shell', {
   },
   locale: (): Promise<Locale> => ipcRenderer.invoke(IPC.appLocale),
   version: (): Promise<string> => ipcRenderer.invoke(IPC.appVersion),
-  openRepository: (): Promise<void> => ipcRenderer.invoke(IPC.appRepository),
+  openRepository: (target: RepositoryTarget): Promise<void> =>
+    ipcRenderer.invoke(IPC.appRepository, target),
   onServersChanged: (cb: () => void) => {
     const handler = () => cb();
     ipcRenderer.on(IPC.serversChanged, handler);

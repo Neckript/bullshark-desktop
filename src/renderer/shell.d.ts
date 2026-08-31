@@ -1,5 +1,6 @@
 import type { ServerEntry, Prefs, SourceDto } from '../shared/types';
 import type { Locale } from '../shared/i18n/locales';
+import type { RepositoryTarget } from '../shared/ipc';
 
 declare global {
   interface Window {
@@ -23,7 +24,7 @@ declare global {
       };
       locale: () => Promise<Locale>;
       version: () => Promise<string>;
-      openRepository: () => Promise<void>;
+      openRepository: (target: RepositoryTarget) => Promise<void>;
       onServersChanged: (cb: () => void) => () => void;
     };
   }
