@@ -235,6 +235,11 @@ body {
 .app-content--picker {
   display: flex;
   flex-direction: column;
+  /* Indispensable : #root fait 100%, mais .app-content n'a pas de hauteur
+     propre. Sans hauteur definie ici, la colonne flex se dimensionne sur son
+     contenu et le `flex: 1; min-height: 0` de la grille n'a rien a reduire —
+     la rangee Annuler repasserait sous la ligne de flottaison. */
+  height: 100%;
 }
 
 .app-content--picker .app-grid-sources {
