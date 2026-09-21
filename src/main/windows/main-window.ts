@@ -10,6 +10,7 @@ import { resolveLocale } from '../../shared/i18n/locales';
 import { t } from '../../shared/i18n/messages';
 import { BRIDGE } from '../../shared/bridge';
 import { installScreenShareHandler } from '../screen-share';
+import { sendOverlayEnabledTo } from '../overlay';
 
 let mainWindow: BrowserWindow | null = null;
 
@@ -188,6 +189,7 @@ export const openServerWindow = async (server: ServerEntry) => {
   mainWindow.webContents.on('did-finish-load', () => {
     void sendCompatBanner(mainWindow!, server.url);
     void captureLoadedVersion(server.url);
+    sendOverlayEnabledTo(mainWindow!);
   });
 
   mainWindow.on('focus', () => {

@@ -1,6 +1,7 @@
 import { globalShortcut } from 'electron';
-import { DEFAULT_MUTE_HOTKEY } from '../shared/types';
+import { DEFAULT_MUTE_HOTKEY, DEFAULT_OVERLAY_HOTKEY } from '../shared/types';
 import { requestVoiceToggle } from './voice-bridge';
+import { toggleOverlayVisibility } from './overlay';
 import type { createServerStore } from './servers/store';
 
 type Store = ReturnType<typeof createServerStore>;
@@ -11,33 +12,58 @@ export type HotkeyRegistrar = {
 };
 
 // '' (or whitespace) = hotkey disabled; non-string values fall back to default.
-export const resolveMuteHotkey = (pref: unknown): string | null => {
-  if (typeof pref !== 'string') return DEFAULT_MUTE_HOTKEY;
+export const resolveHotkey = (pref: unknown, fallback: string): string | null => {
+  if (typeof pref !== 'string') return fallback;
   const trimmed = pref.trim();
   return trimmed === '' ? null : trimmed;
 };
 
-// Re-applies the mute hotkey from scratch. Returns false only when an enabled
-// accelerator could not be registered (invalid or taken). Never throws.
-export const applyMuteHotkey = (
-  accelerator: string | null,
-  registrar: HotkeyRegistrar,
-  onTrigger: () => void
+export const resolveMuteHotkey = (pref: unknown): string | null =>
+  resolveHotkey(pref, DEFAULT_MUTE_HOTKEY);
+
+export const resolveOverlayHotkey = (pref: unknown): string | null =>
+  resolveHotkey(pref, DEFAULT_OVERLAY_HOTKEY);
+
+type HotkeyBinding = { accelerator: string | null; onTrigger: () => void };
+
+// Re-applies ALL hotkeys from scratch. `globalShortcut.unregisterAll()` clears
+// every binding, so mute and overlay must be re-registered together in one
+// pass. Returns false if any enabled accelerator failed to register. Never
+// throws.
+export const applyHotkeys = (
+  bindings: HotkeyBinding[],
+  registrar: HotkeyRegistrar
 ): boolean => {
   registrar.unregisterAll();
-  if (accelerator === null) return true; // disabled on purpose
-  try {
-    return registrar.register(accelerator, onTrigger);
-  } catch {
-    return false;
+  let ok = true;
+  for (const { accelerator, onTrigger } of bindings) {
+    if (accelerator === null) continue; // disabled on purpose
+    try {
+      if (!registrar.register(accelerator, onTrigger)) ok = false;
+    } catch {
+      ok = false;
+    }
   }
+  return ok;
 };
 
-// Called at startup and again whenever the muteHotkey pref changes.
+// Called at startup and again whenever a hotkey pref changes.
 export const registerHotkeys = (store: Store) => {
-  const accelerator = resolveMuteHotkey(store.getPrefs().muteHotkey);
-  const ok = applyMuteHotkey(accelerator, globalShortcut, requestVoiceToggle);
-  if (!ok) console.warn(`[hotkeys] could not register mute hotkey "${accelerator}" (invalid or taken by another app)`);
+  const prefs = store.getPrefs();
+  const ok = applyHotkeys(
+    [
+      {
+        accelerator: resolveMuteHotkey(prefs.muteHotkey),
+        onTrigger: requestVoiceToggle
+      },
+      {
+        accelerator: resolveOverlayHotkey(prefs.overlayHotkey),
+        onTrigger: toggleOverlayVisibility
+      }
+    ],
+    globalShortcut
+  );
+  if (!ok) console.warn('[hotkeys] a hotkey could not be registered (invalid or taken by another app)');
 };
 
 export const unregisterHotkeys = () => globalShortcut.unregisterAll();

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Onboarding } from './pages/Onboarding';
+import { Overlay } from './pages/Overlay';
 import { Servers } from './pages/Servers';
 import { SharePicker } from './pages/SharePicker';
 
@@ -12,5 +13,6 @@ export const Router = () => {
   }, []);
   if (hash.startsWith('/servers')) return <Servers />;
   if (hash.startsWith('/share-picker')) return <SharePicker />;
+  if (hash.startsWith('/overlay')) return <Overlay />;
   return <Onboarding />;
 };

@@ -10,6 +10,12 @@ import { setVoiceState } from './voice-bridge';
 import { resolveLocale } from '../shared/i18n/locales';
 import { getSourceDtos, chooseSource, cancelShare } from './screen-share';
 import { registerHotkeys } from './hotkeys';
+import {
+  applyOverlayParticipants,
+  refreshOverlayEnabled,
+  repositionOverlay
+} from './overlay';
+import type { OverlayPayload } from '../shared/types';
 
 type Store = ReturnType<typeof createServerStore>;
 
@@ -24,11 +30,13 @@ export const registerIpc = (store: Store, onVoiceState?: () => void) => {
   ipcMain.handle(IPC.prefsSet, (_e, patch: unknown) => {
     if (typeof patch !== 'object' || patch === null) return store.getPrefs();
     const p = patch as Record<string, unknown>;
-    const allowed: (keyof Prefs)[] = ['activeServerId', 'notificationsMuted', 'launchOnStartup', 'lastWindowBounds', 'muteHotkey'];
+    const allowed: (keyof Prefs)[] = ['activeServerId', 'notificationsMuted', 'launchOnStartup', 'lastWindowBounds', 'muteHotkey', 'overlayEnabled', 'overlayHotkey', 'overlayCorner'];
     const sanitized: Partial<Prefs> = {};
     for (const key of allowed) if (key in p) (sanitized as Record<string, unknown>)[key] = p[key];
     store.setPrefs(sanitized);
-    if ('muteHotkey' in sanitized) registerHotkeys(store);
+    if ('muteHotkey' in sanitized || 'overlayHotkey' in sanitized) registerHotkeys(store);
+    if ('overlayEnabled' in sanitized) refreshOverlayEnabled();
+    if ('overlayCorner' in sanitized) repositionOverlay();
     return store.getPrefs();
   });
 
@@ -79,4 +87,14 @@ export const registerIpc = (store: Store, onVoiceState?: () => void) => {
   });
 
   ipcMain.on(BRIDGE.focusWindow, () => showMainWindow());
+
+  ipcMain.on(BRIDGE.overlayParticipants, (_e, payload: OverlayPayload) => {
+    if (
+      typeof payload?.inVoice !== 'boolean' ||
+      !Array.isArray(payload?.participants)
+    ) {
+      return;
+    }
+    applyOverlayParticipants(payload);
+  });
 };
