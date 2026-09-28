@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import { IPC, type RepositoryTarget } from '../shared/ipc';
-import type { Prefs, ServerEntry, SourceDto } from '../shared/types';
+import type { Prefs, ServerEntry, SourceDto, OverlayPayload } from '../shared/types';
 import type { Locale } from '../shared/i18n/locales';
 
 contextBridge.exposeInMainWorld('shell', {
@@ -30,5 +30,12 @@ contextBridge.exposeInMainWorld('shell', {
     const handler = () => cb();
     ipcRenderer.on(IPC.serversChanged, handler);
     return () => ipcRenderer.removeListener(IPC.serversChanged, handler);
+  },
+  overlay: {
+    onParticipants: (cb: (payload: OverlayPayload) => void) => {
+      const handler = (_e: unknown, payload: OverlayPayload) => cb(payload);
+      ipcRenderer.on(IPC.overlayParticipants, handler);
+      return () => ipcRenderer.removeListener(IPC.overlayParticipants, handler);
+    }
   }
 });

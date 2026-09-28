@@ -3,13 +3,18 @@ import type { Locale } from '../../shared/i18n/locales';
 import { t } from '../../shared/i18n/messages';
 import { AboutSection } from '../sections/AboutSection';
 import { HotkeysSection } from '../sections/HotkeysSection';
+import { OverlaySection } from '../sections/OverlaySection';
 import { ServersSection } from '../sections/ServersSection';
 
-type Section = 'servers' | 'hotkeys' | 'about';
+type Section = 'servers' | 'hotkeys' | 'overlay' | 'about';
 
-const SECTIONS: { id: Section; code: 'nav-servers' | 'nav-hotkeys' | 'nav-about' }[] = [
+const SECTIONS: {
+  id: Section;
+  code: 'nav-servers' | 'nav-hotkeys' | 'nav-overlay' | 'nav-about';
+}[] = [
   { id: 'servers', code: 'nav-servers' },
   { id: 'hotkeys', code: 'nav-hotkeys' },
+  { id: 'overlay', code: 'nav-overlay' },
   { id: 'about', code: 'nav-about' }
 ];
 
@@ -53,6 +58,7 @@ export const Servers = () => {
       <main className="app-content">
         {section === 'servers' && <ServersSection locale={locale} />}
         {section === 'hotkeys' && <HotkeysSection locale={locale} />}
+        {section === 'overlay' && <OverlaySection locale={locale} />}
         {section === 'about' && (
           <AboutSection locale={locale} version={version} />
         )}

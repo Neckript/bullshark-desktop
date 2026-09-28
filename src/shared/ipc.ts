@@ -13,7 +13,8 @@ export const IPC = {
   appRepository: 'app:repository',
   screenSources: 'screen:sources',
   screenPick: 'screen:pick',
-  screenCancel: 'screen:cancel'
+  screenCancel: 'screen:cancel',
+  overlayParticipants: 'overlay:participants' // main → overlay renderer (OverlayPayload)
 } as const;
 
 // Cibles acceptees par le canal `app:repository`. Liste FERMEE : le renderer

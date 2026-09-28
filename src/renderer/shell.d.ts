@@ -1,4 +1,4 @@
-import type { ServerEntry, Prefs, SourceDto } from '../shared/types';
+import type { ServerEntry, Prefs, SourceDto, OverlayPayload } from '../shared/types';
 import type { Locale } from '../shared/i18n/locales';
 import type { RepositoryTarget } from '../shared/ipc';
 
@@ -26,6 +26,9 @@ declare global {
       version: () => Promise<string>;
       openRepository: (target: RepositoryTarget) => Promise<void>;
       onServersChanged: (cb: () => void) => () => void;
+      overlay: {
+        onParticipants: (cb: (payload: OverlayPayload) => void) => () => void;
+      };
     };
   }
 }

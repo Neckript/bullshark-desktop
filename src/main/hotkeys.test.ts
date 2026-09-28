@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { DEFAULT_MUTE_HOTKEY } from '../shared/types';
-import { applyMuteHotkey, resolveMuteHotkey, type HotkeyRegistrar } from './hotkeys';
+import { applyHotkeys, resolveMuteHotkey, type HotkeyRegistrar } from './hotkeys';
 
 const fakeRegistrar = (registerResult: boolean | 'throw' = true) => {
   const calls: { registered: string[]; unregisterAllCount: number } = { registered: [], unregisterAllCount: 0 };
@@ -29,30 +29,72 @@ describe('resolveMuteHotkey', () => {
   });
 });
 
-describe('applyMuteHotkey', () => {
+describe('applyHotkeys', () => {
   test('always clears previous registrations first', () => {
     const { registrar, calls } = fakeRegistrar();
-    applyMuteHotkey(null, registrar, () => {});
+    applyHotkeys([{ accelerator: null, onTrigger: () => {} }], registrar);
     expect(calls.unregisterAllCount).toBe(1);
   });
-  test('disabled (null) registers nothing and reports success', () => {
+  test('disabled (null) bindings register nothing and report success', () => {
     const { registrar, calls } = fakeRegistrar();
-    expect(applyMuteHotkey(null, registrar, () => {})).toBe(true);
+    expect(
+      applyHotkeys(
+        [
+          { accelerator: null, onTrigger: () => {} },
+          { accelerator: null, onTrigger: () => {} }
+        ],
+        registrar
+      )
+    ).toBe(true);
     expect(calls.registered).toEqual([]);
   });
-  test('registers the accelerator and wires the trigger', () => {
+  test('registers every enabled accelerator together', () => {
     const { registrar, calls } = fakeRegistrar();
-    let fired = 0;
-    expect(applyMuteHotkey('Alt+M', { ...registrar, register: (a, cb) => { calls.registered.push(a); cb(); fired += 1; return true; } }, () => { fired += 10; })).toBe(true);
-    expect(calls.registered).toEqual(['Alt+M']);
-    expect(fired).toBe(11); // callback invoked once by the fake, trigger ran
+    expect(
+      applyHotkeys(
+        [
+          { accelerator: 'Alt+M', onTrigger: () => {} },
+          { accelerator: 'Alt+O', onTrigger: () => {} }
+        ],
+        registrar
+      )
+    ).toBe(true);
+    // A single unregisterAll pass, then both registered.
+    expect(calls.unregisterAllCount).toBe(1);
+    expect(calls.registered).toEqual(['Alt+M', 'Alt+O']);
   });
-  test('reports failure when registration is refused', () => {
+  test('wires each trigger to its accelerator', () => {
+    const { calls } = fakeRegistrar();
+    let muteFired = 0;
+    let overlayFired = 0;
+    const registrar: HotkeyRegistrar = {
+      register: (a, cb) => {
+        calls.registered.push(a);
+        cb();
+        return true;
+      },
+      unregisterAll: () => {}
+    };
+    applyHotkeys(
+      [
+        { accelerator: 'Alt+M', onTrigger: () => { muteFired += 1; } },
+        { accelerator: 'Alt+O', onTrigger: () => { overlayFired += 1; } }
+      ],
+      registrar
+    );
+    expect(muteFired).toBe(1);
+    expect(overlayFired).toBe(1);
+  });
+  test('reports failure when a registration is refused', () => {
     const { registrar } = fakeRegistrar(false);
-    expect(applyMuteHotkey('Alt+M', registrar, () => {})).toBe(false);
+    expect(
+      applyHotkeys([{ accelerator: 'Alt+M', onTrigger: () => {} }], registrar)
+    ).toBe(false);
   });
   test('reports failure instead of throwing on an invalid accelerator', () => {
     const { registrar } = fakeRegistrar('throw');
-    expect(applyMuteHotkey('Not A Key', registrar, () => {})).toBe(false);
+    expect(
+      applyHotkeys([{ accelerator: 'Not A Key', onTrigger: () => {} }], registrar)
+    ).toBe(false);
   });
 });
