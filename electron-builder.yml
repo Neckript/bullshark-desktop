@@ -17,6 +17,11 @@ publish:
   # "Publish" click and keep the update invisible to installed clients.
   releaseType: release
 win:
+  # L'.ico est fabrique a la main par build/make-icons.sh : chaque taille y est
+  # reduite en Lanczos depuis l'art nettoye. Sans cette ligne, electron-builder
+  # reduit build/icon.png tout seul et les tailles 16-24 px, celles de la barre
+  # des taches et des notifications, deviennent illisibles.
+  icon: build/icon.ico
   target:
     - target: nsis
       arch: [x64]

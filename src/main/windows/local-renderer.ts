@@ -1,10 +1,15 @@
 import { BrowserWindow } from 'electron';
 import { join } from 'node:path';
 
-export const createLocalWindow = (route: string, opts?: { width?: number; height?: number }) => {
+export const createLocalWindow = (
+  route: string,
+  opts?: { width?: number; height?: number; minWidth?: number; minHeight?: number }
+) => {
   const win = new BrowserWindow({
     width: opts?.width ?? 520,
     height: opts?.height ?? 600,
+    ...(opts?.minWidth !== undefined ? { minWidth: opts.minWidth } : {}),
+    ...(opts?.minHeight !== undefined ? { minHeight: opts.minHeight } : {}),
     webPreferences: {
       contextIsolation: true,
       sandbox: true,
