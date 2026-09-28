@@ -147,6 +147,10 @@ export const openServerWindow = async (server: ServerEntry) => {
         sandbox: true,
         nodeIntegration: false,
         partition: partitionForServer(server.id),
+        // The in-game overlay is fed by a timer in this window's remote page,
+        // which runs precisely while a game covers it. Chromium's default
+        // background throttling would stall that timer exactly then.
+        backgroundThrottling: false,
         preload: join(import.meta.dirname, '../preload/bridge.cjs')
       }
     });
