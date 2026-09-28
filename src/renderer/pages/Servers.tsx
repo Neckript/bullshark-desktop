@@ -1,6 +1,10 @@
 import { useEffect, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react';
-import type { Prefs, ServerEntry } from '../../shared/types';
-import { DEFAULT_MUTE_HOTKEY } from '../../shared/types';
+import type { OverlayCorner, Prefs, ServerEntry } from '../../shared/types';
+import {
+  DEFAULT_MUTE_HOTKEY,
+  DEFAULT_OVERLAY_HOTKEY,
+  OVERLAY_CORNERS
+} from '../../shared/types';
 import { eventToAccelerator } from '../../shared/hotkey-capture';
 import type { Locale } from '../../shared/i18n/locales';
 import { t } from '../../shared/i18n/messages';
@@ -48,6 +52,28 @@ export const Servers = () => {
     ? ''
     : prefs.muteHotkey.trim() === '' ? t('mute-hotkey-disabled', locale) : prefs.muteHotkey;
 
+  const saveOverlayHotkey = async (overlayHotkey: string) => {
+    await window.shell.prefs.set({ overlayHotkey });
+    setPrefs(await window.shell.prefs.get());
+  };
+
+  const onOverlayHotkeyKeyDown = (e: ReactKeyboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    if (e.key === 'Backspace' || e.key === 'Delete') { void saveOverlayHotkey(''); return; }
+    if (e.key === 'Escape') { e.currentTarget.blur(); return; }
+    const accelerator = eventToAccelerator(e);
+    if (accelerator) void saveOverlayHotkey(accelerator);
+  };
+
+  const setOverlayPref = async (patch: Partial<Prefs>) => {
+    await window.shell.prefs.set(patch);
+    setPrefs(await window.shell.prefs.get());
+  };
+
+  const overlayHotkeyDisplay = prefs === null
+    ? ''
+    : prefs.overlayHotkey.trim() === '' ? t('mute-hotkey-disabled', locale) : prefs.overlayHotkey;
+
   return (
     <div style={{ padding: 24, fontFamily: 'system-ui' }}>
       <h2>Servers</h2>
@@ -74,6 +100,49 @@ export const Servers = () => {
         style={{ width: 280 }}
       />
       <button onClick={() => void saveHotkey(DEFAULT_MUTE_HOTKEY)}>{t('mute-hotkey-reset', locale)}</button>
+
+      <h3>{t('overlay-section', locale)}</h3>
+      <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <input
+          type="checkbox"
+          checked={prefs?.overlayEnabled ?? false}
+          onChange={(e) => void setOverlayPref({ overlayEnabled: e.target.checked })}
+        />
+        {t('overlay-enable', locale)}
+      </label>
+
+      <div style={{ marginTop: 8 }}>
+        <label>
+          {t('overlay-corner-label', locale)}{' '}
+          <select
+            value={prefs?.overlayCorner ?? 'top-right'}
+            onChange={(e) =>
+              void setOverlayPref({ overlayCorner: e.target.value as OverlayCorner })
+            }
+          >
+            {OVERLAY_CORNERS.map((corner) => (
+              <option key={corner} value={corner}>
+                {t(`overlay-corner-${corner}`, locale)}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+
+      <div style={{ marginTop: 8 }}>
+        <div>{t('overlay-hotkey-label', locale)}</div>
+        <input
+          readOnly
+          value={overlayHotkeyDisplay}
+          onKeyDown={onOverlayHotkeyKeyDown}
+          placeholder={t('mute-hotkey-hint', locale)}
+          title={t('mute-hotkey-hint', locale)}
+          style={{ width: 280 }}
+        />
+        <button onClick={() => void saveOverlayHotkey(DEFAULT_OVERLAY_HOTKEY)}>
+          {t('mute-hotkey-reset', locale)}
+        </button>
+      </div>
     </div>
   );
 };

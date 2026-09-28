@@ -11,5 +11,6 @@ export const IPC = {
   appLocale: 'app:locale',
   screenSources: 'screen:sources',
   screenPick: 'screen:pick',
-  screenCancel: 'screen:cancel'
+  screenCancel: 'screen:cancel',
+  overlayParticipants: 'overlay:participants' // main → overlay renderer (OverlayPayload)
 } as const;

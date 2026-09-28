@@ -10,5 +10,7 @@ export const BRIDGE = {
   compat: 'bridge:compat',                   // main → remote ({ verdict, message })
   updateAvailable: 'bridge:update-available',// main → remote ({ message, reloadLabel })
   reloadRequest: 'bridge:reload-request',    // remote → main (reload the page)
-  titleBarColors: 'bridge:title-bar-colors'  // remote → main ({ color, symbolColor })
+  titleBarColors: 'bridge:title-bar-colors', // remote → main ({ color, symbolColor })
+  overlayParticipants: 'bridge:overlay-participants', // remote → main (OverlayPayload)
+  overlayEnabled: 'bridge:overlay-enabled'   // main → remote (boolean)
 } as const;

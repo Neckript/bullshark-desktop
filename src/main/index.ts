@@ -5,6 +5,7 @@ import { createServerStore, electronStoreBackend } from './servers/store';
 import { initTray, refreshTray } from './tray';
 import { initUpdater } from './updater';
 import { registerHotkeys, unregisterHotkeys } from './hotkeys';
+import { initOverlay } from './overlay';
 import { openServerWindow } from './windows/main-window';
 import { openOnboarding } from './windows/servers-window';
 
@@ -31,6 +32,7 @@ if (!gotLock) {
     // sur la fenetre serveur (main-window.ts).
     Menu.setApplicationMenu(null);
     setNotificationsMuted(store.getPrefs().notificationsMuted);
+    initOverlay(store);
     registerIpc(store, () => refreshTray(store));
     start();
     initTray(store);

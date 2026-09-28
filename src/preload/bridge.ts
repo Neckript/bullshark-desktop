@@ -1,6 +1,11 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import { BRIDGE } from '../shared/bridge';
-import type { VoiceState, CompatBannerPayload, UpdateBannerPayload } from '../shared/types';
+import type {
+  VoiceState,
+  CompatBannerPayload,
+  UpdateBannerPayload,
+  OverlayPayload
+} from '../shared/types';
 
 let muted = false;
 ipcRenderer.on(BRIDGE.setMuted, (_e, value: boolean) => { muted = value; });
@@ -99,6 +104,15 @@ contextBridge.exposeInMainWorld('bullshark', {
   },
   setTitleBarColors: (colors: { color: string; symbolColor: string }) =>
     ipcRenderer.send(BRIDGE.titleBarColors, colors),
+  overlay: {
+    reportParticipants: (payload: OverlayPayload) =>
+      ipcRenderer.send(BRIDGE.overlayParticipants, payload),
+    onEnabledChanged: (cb: (enabled: boolean) => void) => {
+      const h = (_e: unknown, enabled: boolean) => cb(enabled);
+      ipcRenderer.on(BRIDGE.overlayEnabled, h);
+      return () => ipcRenderer.removeListener(BRIDGE.overlayEnabled, h);
+    }
+  },
   focusWindow: () => ipcRenderer.send(BRIDGE.focusWindow),
   onMuteChanged: (cb: (muted: boolean) => void) => {
     const h = (_e: unknown, v: boolean) => cb(v);
