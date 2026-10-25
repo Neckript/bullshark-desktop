@@ -74,6 +74,13 @@ const createOverlayWindow = () => {
     overlay = null;
   });
 
+  // A crashed overlay renderer leaves a live but empty (fully transparent)
+  // window that nothing would replace. Drop it; the next roster tick rebuilds it.
+  overlay.webContents.on('render-process-gone', (_e, details) => {
+    console.warn('[overlay] renderer gone:', details.reason);
+    destroyOverlayWindow();
+  });
+
   // Push the latest roster as soon as the page is ready.
   overlay.webContents.on('did-finish-load', () => {
     overlay?.webContents.send(IPC.overlayParticipants, lastPayload);
@@ -97,6 +104,9 @@ const showIfAppropriate = () => {
   if (manuallyHidden) {
     overlay.hide();
   } else {
+    // Windows can drop a window's topmost state (a fullscreen game, another
+    // topmost app); re-assert it on every roster tick, not only at creation.
+    overlay.setAlwaysOnTop(true, 'screen-saver');
     overlay.showInactive();
   }
 };
