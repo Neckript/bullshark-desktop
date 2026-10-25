@@ -9,66 +9,75 @@ const initials = (name: string) =>
     .map((part) => part[0]?.toUpperCase() ?? '')
     .join('');
 
-const Row = ({ participant }: { participant: OverlayParticipant }) => (
-  <div
-    style={{
-      display: 'flex',
-      alignItems: 'center',
-      gap: 8,
-      padding: '4px 8px',
-      borderRadius: 8,
-      background: 'rgba(0, 0, 0, 0.55)',
-      // The speaking ring mirrors the in-app green highlight.
-      outline: participant.speaking ? '2px solid #3ba55d' : '2px solid transparent',
-      opacity: participant.speaking ? 1 : 0.85
-    }}
-  >
+const Row = ({ participant }: { participant: OverlayParticipant }) => {
+  // Remember which URL failed so a new avatar URL gets a fresh try; on failure
+  // show initials like the in-app avatar does, not Chromium's broken-image icon.
+  const [failedUrl, setFailedUrl] = useState<string | null>(null);
+  const avatarUrl =
+    participant.avatarUrl && participant.avatarUrl !== failedUrl ? participant.avatarUrl : null;
+
+  return (
     <div
       style={{
-        position: 'relative',
-        width: 28,
-        height: 28,
-        flex: '0 0 auto',
-        borderRadius: '50%',
-        overflow: 'hidden',
-        background: '#5865f2',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center',
-        fontSize: 11,
-        fontWeight: 700,
-        color: '#fff'
+        gap: 8,
+        padding: '4px 8px',
+        borderRadius: 8,
+        background: 'rgba(0, 0, 0, 0.55)',
+        // The speaking ring mirrors the in-app green highlight.
+        outline: participant.speaking ? '2px solid #3ba55d' : '2px solid transparent',
+        opacity: participant.speaking ? 1 : 0.85
       }}
     >
-      {participant.avatarUrl ? (
-        <img
-          src={participant.avatarUrl}
-          alt=""
-          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-        />
-      ) : (
-        initials(participant.name)
+      <div
+        style={{
+          position: 'relative',
+          width: 28,
+          height: 28,
+          flex: '0 0 auto',
+          borderRadius: '50%',
+          overflow: 'hidden',
+          background: '#5865f2',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: 11,
+          fontWeight: 700,
+          color: '#fff'
+        }}
+      >
+        {avatarUrl ? (
+          <img
+            src={avatarUrl}
+            alt=""
+            onError={() => setFailedUrl(avatarUrl)}
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          />
+        ) : (
+          initials(participant.name)
+        )}
+      </div>
+      <span
+        style={{
+          flex: 1,
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+          fontSize: 13,
+          color: '#fff'
+        }}
+      >
+        {participant.name}
+      </span>
+      {participant.micMuted && (
+        <span style={{ fontSize: 12, color: '#ed4245' }} aria-label="muted">
+          ✕
+        </span>
       )}
     </div>
-    <span
-      style={{
-        flex: 1,
-        overflow: 'hidden',
-        textOverflow: 'ellipsis',
-        whiteSpace: 'nowrap',
-        fontSize: 13,
-        color: '#fff'
-      }}
-    >
-      {participant.name}
-    </span>
-    {participant.micMuted && (
-      <span style={{ fontSize: 12, color: '#ed4245' }} aria-label="muted">
-        ✕
-      </span>
-    )}
-  </div>
-);
+  );
+};
 
 export const Overlay = () => {
   const [payload, setPayload] = useState<OverlayPayload>({
